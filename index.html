@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Cloud Cinema + AI</title>
+    <style>
+        /* --- DARK THEME STYLING --- */
+        :root { --primary: #e50914; --ai: #4285f4; --bg: #141414; --card: #1f1f1f; --text: #fff; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        
+        /* Layout */
+        header { border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { color: var(--primary); margin: 0; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* Standard Controls */
+        .controls { background: var(--card); padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .step-label { color: #aaa; font-size: 13px; margin-bottom: 8px; font-weight: bold; text-transform: uppercase; }
+        .input-group { display: flex; gap: 10px; }
+        
+        /* AI Controls (Special Styling) */
+        .ai-controls { background: linear-gradient(135deg, #1f1f1f 0%, #2a2a35 100%); border: 1px solid #444; position: relative; overflow: hidden; }
+        .ai-controls::before { content: "✨"; position: absolute; top: -10px; right: -10px; font-size: 80px; opacity: 0.1; }
+        .ai-btn { background: linear-gradient(90deg, #4285f4, #9b51e0); border: none; }
+        .ai-btn:hover { background: linear-gradient(90deg, #5c9aff, #b06bf0); box-shadow: 0 0 15px rgba(66, 133, 244, 0.4); }
+        
+        input { flex: 1; padding: 12px; background: #000; border: 1px solid #444; color: white; border-radius: 4px; font-size: 16px; outline: none; }
+        input:focus { border-color: var(--primary); }
+        
+        button { padding: 12px 24px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button:hover { background: #b20710; }
+
+        /* AI Result Box */
+        #ai-result { margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-left: 4px solid var(--ai); border-radius: 4px; display: none; font-style: italic; line-height: 1.5; }
+
+        /* Search Results Area */
+        #search-results { display: flex; gap: 15px; overflow-x: auto; padding: 15px 0; }
+        .search-item { min-width: 120px; cursor: pointer; text-align: center; font-size: 12px; opacity: 0.7; transition: 0.2s; }
+        .search-item:hover { opacity: 1; transform: scale(1.05); }
+        .search-item img { width: 100%; border-radius: 6px; margin-bottom: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
+
+        /* Movie Grid */
+        h2 { border-left: 4px solid var(--primary); padding-left: 10px; margin-top: 40px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 25px; margin-top: 20px; }
+        
+        .card { background: var(--card); border-radius: 6px; overflow: hidden; cursor: pointer; transition: 0.3s; position: relative; }
+        .card:hover { transform: scale(1.05); z-index: 10; box-shadow: 0 10px 20px rgba(0,0,0,0.7); }
+        .card img { width: 100%; height: 225px; object-fit: cover; }
+        .card-title { padding: 10px; font-weight: bold; font-size: 14px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .delete-btn { position: absolute; top: 5px; right: 5px; background: rgba(200, 0, 0, 0.9); color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-size: 14px; display: none; z-index: 20; }
+        .card:hover .delete-btn { display: block; }
+        
+        /* Selected Highlight for AI Picker */
+        .highlight-card { box-shadow: 0 0 30px var(--ai), 0 0 10px white !important; transform: scale(1.1) !important; z-index: 20 !important; border: 2px solid white; }
+
+        /* Video Player Overlay */
+        #player-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        #video-container { width: 90%; max-width: 1100px; aspect-ratio: 16/9; background: black; position: relative; box-shadow: 0 0 50px rgba(229, 9, 20, 0.2); }
+        iframe, video { width: 100%; height: 100%; border: none; }
+        #close-btn { position: absolute; top: -40px; right: 0; color: white; cursor: pointer; font-size: 18px; font-weight: bold; background: #333; padding: 5px 15px; border-radius: 4px; }
+        #close-btn:hover { background: var(--primary); }
+
+        /* Loading Spinner */
+        #loader { text-align: center; color: #666; font-style: italic; margin-top: 20px; }
+        
+        /* Settings Toggle */
+        #settings-toggle { cursor: pointer; font-size: 20px; opacity: 0.5; }
+        #settings-toggle:hover { opacity: 1; }
+        #api-settings { display: none; margin-bottom: 20px; background: #222; padding: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>My Cloud Cinema</h1>
+    <div style="display:flex; gap: 15px; align-items:center;">
+        <div style="font-size: 12px; color: #888;">Private Library</div>
+        <span id="settings-toggle" onclick="toggleSettings()">⚙️</span>
+    </div>
+</header>
+
+<div id="api-settings">
+    <div class="step-label">API Keys Configuration</div>
+    <input type="password" id="gemini-key-input" placeholder="Paste Gemini API Key Here" style="margin-bottom:5px;">
+    <input type="text" id="tmdb-key-input" placeholder="Paste TMDb API Key Here (Optional override)">
+    <button onclick="saveKeys()" style="margin-top:5px; padding: 5px 10px;">Save Keys</button>
+</div>
+
+<!-- AI ASSISTANT SECTION -->
+<div class="controls ai-controls">
+    <div class="step-label" style="color: #8ab4f8;">✨ AI Concierge (Powered by Gemini)</div>
+    <div class="input-group">
+        <input type="text" id="ai-mood" placeholder="How are you feeling? (e.g., 'I want 80s action' or 'Something sad')">
+        <button class="ai-btn" onclick="askGeminiPicker()">✨ Pick for Me</button>
+    </div>
+    <div style="margin-top: 10px;">
+        <button class="ai-btn" style="background: transparent; border: 1px solid #555; font-size: 12px; padding: 8px;" onclick="askGeminiJudge()">✨ Judge My Taste</button>
+    </div>
+    <div id="ai-result"></div>
+</div>
+
+<!-- STEP 1: Search TMDb -->
+<div class="controls">
+    <div class="step-label">Step 1: Find Movie Metadata</div>
+    <div class="input-group">
+        <input type="text" id="tmdb-search" placeholder="Enter movie name (e.g. Iron Man)">
+        <button onclick="searchTMDB()">Search</button>
+    </div>
+    <div id="search-results"></div>
+</div>
+
+<!-- STEP 2: Paste Link (Hidden until needed) -->
+<div class="controls" id="link-area" style="display:none; border-color: var(--primary);">
+    <div class="step-label" style="color: var(--primary);">Step 2: Add Link for <span id="selected-title" style="color:white">...</span></div>
+    <div class="input-group">
+        <input type="text" id="movie-link" placeholder="Paste .mp4, YouTube, or Google Drive link here">
+        <button onclick="saveMovie()">Add to Library</button>
+    </div>
+</div>
+
+<!-- Library Grid -->
+<h2>My Collection</h2>
+<div id="loader">Loading your movies from the cloud...</div>
+<div class="grid" id="grid"></div>
+
+<!-- Video Player Modal -->
+<div id="player-overlay">
+    <div id="video-container">
+        <div id="close-btn" onclick="closePlayer()">✕ Close Player</div>
+        <div id="video-slot"></div>
+    </div>
+</div>
+
+<!-- LOGIC SCRIPT -->
+<script type="module">
+    // ==========================================
+    // 1. CONFIGURATION & SETUP
+    // ==========================================
+    
+    // Default Demo Keys (Users can override these in UI)
+    const DEFAULT_TMDB_KEY = "3fd2be6f0c70a2a598f084ddfb75487c"; 
+    
+    // Load keys from storage or use defaults
+    let TMDB_KEY = localStorage.getItem("tmdb_key") || DEFAULT_TMDB_KEY;
+    let GEMINI_KEY = localStorage.getItem("gemini_key") || "";
+
+    // YOUR FIREBASE CONFIG
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBDZyw3vWpTuo3wKBFCtqqlbQfx1jHHqmc",
+      authDomain: "movietheater-free.firebaseapp.com",
+      projectId: "movietheater-free",
+      storageBucket: "movietheater-free.firebasestorage.app",
+      messagingSenderId: "632877715870",
+      appId: "1:632877715870:web:de263eac9c902b5199c68f"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const moviesCol = collection(db, "movies");
+
+    let tempMovie = null;
+    let allMoviesCache = []; // Store loaded movies for AI to read
+
+    // ==========================================
+    // 2. SETTINGS UI
+    // ==========================================
+    window.toggleSettings = function() {
+        const el = document.getElementById("api-settings");
+        el.style.display = el.style.display === "block" ? "none" : "block";
+        document.getElementById("gemini-key-input").value = GEMINI_KEY;
+        document.getElementById("tmdb-key-input").value = TMDB_KEY === DEFAULT_TMDB_KEY ? "" : TMDB_KEY;
+    }
+
+    window.saveKeys = function() {
+        const gKey = document.getElementById("gemini-key-input").value.trim();
+        const tKey = document.getElementById("tmdb-key-input").value.trim();
+        
+        if(gKey) {
+            localStorage.setItem("gemini_key", gKey);
+            GEMINI_KEY = gKey;
+        }
+        if(tKey) {
+            localStorage.setItem("tmdb_key", tKey);
+            TMDB_KEY = tKey;
+        }
+        alert("Keys Saved! Reloading...");
+        location.reload();
+    }
+
+    // ==========================================
+    // 3. AI GEMINI FUNCTIONS
+    // ==========================================
+    
+    async function callGemini(promptText) {
+        if(!GEMINI_KEY) {
+            alert("Please click the ⚙️ icon and paste your Gemini API Key first!");
+            return null;
+        }
+        
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_KEY}`;
+        
+        const payload = {
+            contents: [{
+                parts: [{ text: promptText }]
+            }]
+        };
+
+        try {
+            const res = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            return data.candidates?.[0]?.content?.parts?.[0]?.text || "AI Error";
+        } catch(e) {
+            console.error(e);
+            return "Connection Error";
+        }
+    }
+
+    window.askGeminiPicker = async function() {
+        const mood = document.getElementById("ai-mood").value;
+        const resultBox = document.getElementById("ai-result");
+        
+        if(!allMoviesCache.length) return alert("Your library is empty!");
+        if(!mood) return alert("Tell the AI how you are feeling first.");
+
+        resultBox.style.display = "block";
+        resultBox.innerHTML = "✨ AI is thinking...";
+
+        // Construct context from library
+        const libraryTitles = allMoviesCache.map(m => m.title).join(", ");
+        
+        const prompt = `
+        I have a personal movie library with these titles: [${libraryTitles}].
+        My current mood/request is: "${mood}".
+        
+        Task: Pick the ONE single best movie from my library that matches this mood.
+        Output format: Just the movie title, followed by a dash, and then a fun 1-sentence explanation of why.
+        Example: "Iron Man - Because you need some explosive ego to cheer you up."
+        `;
+
+        const response = await callGemini(prompt);
+        resultBox.innerHTML = `🤖 <b>Gemini Says:</b><br>${response}`;
+        
+        // Highlight the movie in the grid
+        const pickedTitle = response.split("-")[0].trim();
+        highlightMovieInGrid(pickedTitle);
+    }
+
+    window.askGeminiJudge = async function() {
+        const resultBox = document.getElementById("ai-result");
+        if(!allMoviesCache.length) return alert("Your library is empty!");
+
+        resultBox.style.display = "block";
+        resultBox.innerHTML = "✨ AI is judging you...";
+        
+        const libraryTitles = allMoviesCache.map(m => m.title).join(", ");
+        const prompt = `
+        Look at this list of movies in a user's library: [${libraryTitles}].
+        Roast this person's taste in movies. Be funny, slightly mean, but insightful. 
+        Keep it to 2 short sentences.
+        `;
+
+        const response = await callGemini(prompt);
+        resultBox.innerHTML = `🤖 <b>Gemini Judge:</b><br>${response}`;
+    }
+
+    function highlightMovieInGrid(partialTitle) {
+        // Remove old highlights
+        document.querySelectorAll(".card").forEach(c => c.classList.remove("highlight-card"));
+        
+        // Find best match
+        const cards = Array.from(document.querySelectorAll(".card"));
+        const match = cards.find(c => {
+            const title = c.querySelector(".card-title").innerText.toLowerCase();
+            return title.includes(partialTitle.toLowerCase()) || partialTitle.toLowerCase().includes(title);
+        });
+
+        if(match) {
+            match.scrollIntoView({ behavior: "smooth", block: "center" });
+            match.classList.add("highlight-card");
+        }
+    }
+
+    // ==========================================
+    // 4. STANDARD FUNCTIONS (Search, Save, Load)
+    // ==========================================
+    window.searchTMDB = async function() {
+        const q = document.getElementById('tmdb-search').value.trim();
+        if(!q) return alert("Please type a movie name!");
+        
+        const resultsDiv = document.getElementById('search-results');
+        resultsDiv.innerHTML = "<div style='color:#888; padding:10px;'>Searching database...</div>";
+
+        const directUrl = `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}`;
+
+        try {
+            let res;
+            try {
+                res = await fetch(directUrl);
+            } catch (networkError) {
+                console.warn("Direct connection failed, using proxy...");
+                res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(directUrl)}`);
+            }
+
+            if(!res.ok) throw new Error("API request failed");
+            const data = await res.json();
+            resultsDiv.innerHTML = "";
+
+            if(!data.results || data.results.length === 0) {
+                resultsDiv.innerHTML = "<div style='padding:10px;'>No movies found.</div>";
+                return;
+            }
+
+            data.results.slice(0, 10).forEach(m => {
+                if(m.poster_path) {
+                    const item = document.createElement('div');
+                    item.className = 'search-item';
+                    item.innerHTML = `
+                        <img src="https://image.tmdb.org/t/p/w185${m.poster_path}">
+                        <div>${m.title} (${m.release_date ? m.release_date.substring(0,4) : 'N/A'})</div>
+                    `;
+                    item.onclick = () => selectMovieForAdd(m);
+                    resultsDiv.appendChild(item);
+                }
+            });
+        } catch(e) {
+            console.error(e);
+            resultsDiv.innerHTML = "<div style='color:red; padding:10px;'>Connection failed.</div>";
+        }
+    }
+
+    window.selectMovieForAdd = function(m) {
+        tempMovie = m;
+        document.getElementById('selected-title').innerText = m.title;
+        document.getElementById('link-area').style.display = 'block';
+        document.getElementById('movie-link').focus();
+        document.getElementById('search-results').innerHTML = ""; 
+    }
+
+    window.saveMovie = async function() {
+        const link = document.getElementById('movie-link').value.trim();
+        if(!link) return alert("Please paste a link!");
+        if(!tempMovie) return alert("Please search and select a movie first.");
+
+        const btn = document.querySelector('#link-area button');
+        const originalText = btn.innerText;
+        btn.innerText = "Saving...";
+        btn.disabled = true;
+
+        try {
+            await addDoc(moviesCol, {
+                title: tempMovie.title,
+                poster: tempMovie.poster_path,
+                overview: tempMovie.overview,
+                link: link,
+                createdAt: Date.now()
+            });
+            
+            document.getElementById('link-area').style.display = 'none';
+            document.getElementById('movie-link').value = "";
+            document.getElementById('tmdb-search').value = "";
+            btn.innerText = originalText;
+            btn.disabled = false;
+            loadLibrary();
+        } catch(e) {
+            console.error(e);
+            alert("Error saving to Firebase.");
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    window.loadLibrary = async function() {
+        const grid = document.getElementById('grid');
+        const loader = document.getElementById('loader');
+        
+        try {
+            const q = query(moviesCol, orderBy("createdAt", "desc"));
+            const snapshot = await getDocs(q);
+            
+            loader.style.display = 'none';
+            grid.innerHTML = "";
+            allMoviesCache = []; // Clear cache
+
+            if(snapshot.empty) {
+                grid.innerHTML = "<div style='color:#666; grid-column: 1/-1; text-align:center; padding: 20px;'>Library empty.</div>";
+                return;
+            }
+
+            snapshot.forEach(docSnap => {
+                const data = docSnap.data();
+                // Store in cache for AI
+                allMoviesCache.push(data);
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="delete-btn" onclick="deleteMovie('${docSnap.id}', event)">✕</div>
+                    <img src="https://image.tmdb.org/t/p/w500${data.poster}" alt="${data.title}">
+                    <div class="card-title">${data.title}</div>
+                `;
+                card.onclick = (e) => {
+                    if(!e.target.classList.contains('delete-btn')) openPlayer(data.link);
+                };
+                grid.appendChild(card);
+            });
+        } catch(e) {
+            console.error(e);
+            loader.innerText = "Error loading library.";
+        }
+    }
+
+    window.deleteMovie = async function(id, e) {
+        e.stopPropagation();
+        if(confirm("Remove this movie?")) {
+            await deleteDoc(doc(db, "movies", id));
+            loadLibrary();
+        }
+    }
+
+    window.openPlayer = function(url) {
+        const overlay = document.getElementById('player-overlay');
+        const slot = document.getElementById('video-slot');
+        overlay.style.display = 'flex';
+        slot.innerHTML = ""; 
+
+        if(url.includes('youtube.com') || url.includes('youtu.be')) {
+            let vid = "";
+            if(url.includes('v=')) vid = url.split('v=')[1].split('&')[0];
+            else if(url.includes('youtu.be/')) vid = url.split('youtu.be/')[1].split('?')[0];
+            slot.innerHTML = `<iframe src="https://www.youtube.com/embed/${vid}?autoplay=1" allowfullscreen></iframe>`;
+        } else if(url.includes('drive.google.com') && url.includes('/view')) {
+            const embedUrl = url.replace('/view', '/preview');
+            slot.innerHTML = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
+        } else {
+            slot.innerHTML = `<video src="${url}" controls autoplay style="width:100%; height:100%"></video>`;
+        }
+    }
+
+    window.closePlayer = function() {
+        document.getElementById('player-overlay').style.display = 'none';
+        document.getElementById('video-slot').innerHTML = ""; 
+    }
+
+    loadLibrary();
+
+</script>
+</body>
+</html>
