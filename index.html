@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Cloud Cinema + AI</title>
+    <title> Amit cinema </title>
     <style>
         /* --- DARK THEME STYLING --- */
         :root { --primary: #e50914; --ai: #4285f4; --bg: #141414; --card: #1f1f1f; --text: #fff; }
@@ -18,17 +18,31 @@
         .step-label { color: #aaa; font-size: 13px; margin-bottom: 8px; font-weight: bold; text-transform: uppercase; }
         .input-group { display: flex; gap: 10px; }
         
-        /* AI Controls (Special Styling) */
+        /* Upload Tabs */
+        .tab-group { display: flex; gap: 10px; margin-bottom: 10px; }
+        .tab-btn { background: #333; border: 1px solid #444; color: #aaa; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; flex: 1; text-align: center; }
+        .tab-btn:hover { background: #444; }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        
+        /* AI Controls */
         .ai-controls { background: linear-gradient(135deg, #1f1f1f 0%, #2a2a35 100%); border: 1px solid #444; position: relative; overflow: hidden; }
         .ai-controls::before { content: "✨"; position: absolute; top: -10px; right: -10px; font-size: 80px; opacity: 0.1; }
         .ai-btn { background: linear-gradient(90deg, #4285f4, #9b51e0); border: none; }
         .ai-btn:hover { background: linear-gradient(90deg, #5c9aff, #b06bf0); box-shadow: 0 0 15px rgba(66, 133, 244, 0.4); }
         
-        input { flex: 1; padding: 12px; background: #000; border: 1px solid #444; color: white; border-radius: 4px; font-size: 16px; outline: none; }
+        input[type="text"], input[type="password"] { flex: 1; padding: 12px; background: #000; border: 1px solid #444; color: white; border-radius: 4px; font-size: 16px; outline: none; }
         input:focus { border-color: var(--primary); }
+        
+        /* File Input Styling */
+        input[type="file"] { background: #111; padding: 10px; border-radius: 4px; border: 1px dashed #555; width: 100%; color: #aaa; }
         
         button { padding: 12px 24px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
         button:hover { background: #b20710; }
+
+        /* Progress Bar */
+        #progress-container { width: 100%; background: #333; height: 6px; border-radius: 3px; margin-top: 10px; display: none; overflow: hidden; }
+        #progress-bar { width: 0%; height: 100%; background: var(--primary); transition: width 0.3s; }
+        #progress-text { font-size: 11px; color: #aaa; margin-top: 4px; text-align: right; display: none; }
 
         /* AI Result Box */
         #ai-result { margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-left: 4px solid var(--ai); border-radius: 4px; display: none; font-style: italic; line-height: 1.5; }
@@ -110,13 +124,39 @@
     <div id="search-results"></div>
 </div>
 
-<!-- STEP 2: Paste Link (Hidden until needed) -->
+<!-- STEP 2: Paste Link OR Upload File -->
 <div class="controls" id="link-area" style="display:none; border-color: var(--primary);">
-    <div class="step-label" style="color: var(--primary);">Step 2: Add Link for <span id="selected-title" style="color:white">...</span></div>
-    <div class="input-group">
-        <input type="text" id="movie-link" placeholder="Paste .mp4, YouTube, or Google Drive link here">
-        <button onclick="saveMovie()">Add to Library</button>
+    <div class="step-label" style="color: var(--primary);">Step 2: Add Movie Source for <span id="selected-title" style="color:white">...</span></div>
+    
+    <!-- Tabs -->
+    <div class="tab-group">
+        <div class="tab-btn active" id="tab-link" onclick="switchTab('link')">🔗 Free Link (Best)</div>
+        <div class="tab-btn" id="tab-file" onclick="switchTab('file')">📂 Upload (5GB Limit)</div>
     </div>
+
+    <!-- Link Input -->
+    <div id="input-container-link" class="input-group" style="flex-direction: column;">
+        <input type="text" id="movie-link" placeholder="Paste YouTube, Google Drive, or Dropbox link here">
+        <div style="font-size: 11px; color: #888; margin-top:5px;">
+            💡 <b>Tip:</b> Upload to Google Drive (15GB Free) or Dropbox (2GB Free) and paste the share link here to save storage space!
+        </div>
+    </div>
+
+    <!-- File Input -->
+    <div id="input-container-file" class="input-group" style="display:none; flex-direction: column;">
+        <input type="file" id="movie-file" accept="video/mp4,video/x-m4v,video/*">
+        <div style="font-size: 11px; color: #888; margin-top:5px;">
+            ⚠️ <b>Warning:</b> Direct uploads are limited to 5GB total (Firebase Free Tier). Use the "Link" tab for unlimited storage.
+        </div>
+    </div>
+
+    <!-- Progress Bar (for uploads) -->
+    <div id="progress-container">
+        <div id="progress-bar"></div>
+    </div>
+    <div id="progress-text">Uploading: 0%</div>
+
+    <button onclick="saveMovie()" style="width: 100%; margin-top: 15px;">Add to Library</button>
 </div>
 
 <!-- Library Grid -->
@@ -138,35 +178,36 @@
     // 1. CONFIGURATION & SETUP
     // ==========================================
     
-    // Default Demo Keys (Users can override these in UI)
     const DEFAULT_TMDB_KEY = "3fd2be6f0c70a2a598f084ddfb75487c"; 
     
-    // Load keys from storage or use defaults
     let TMDB_KEY = localStorage.getItem("tmdb_key") || DEFAULT_TMDB_KEY;
     let GEMINI_KEY = localStorage.getItem("gemini_key") || "";
 
-    // YOUR FIREBASE CONFIG
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    // IMPORT STORAGE
+    import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBDZyw3vWpTuo3wKBFCtqqlbQfx1jHHqmc",
       authDomain: "movietheater-free.firebaseapp.com",
       projectId: "movietheater-free",
-      storageBucket: "movietheater-free.firebasestorage.app",
+      storageBucket: "movietheater-free.firebasestorage.app", // Enabled for uploads
       messagingSenderId: "632877715870",
       appId: "1:632877715870:web:de263eac9c902b5199c68f"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const storage = getStorage(app); // Init storage
     const moviesCol = collection(db, "movies");
 
     let tempMovie = null;
-    let allMoviesCache = []; // Store loaded movies for AI to read
+    let allMoviesCache = [];
+    let currentInputMode = 'link'; // 'link' or 'file'
 
     // ==========================================
-    // 2. SETTINGS UI
+    // 2. UI HELPERS
     // ==========================================
     window.toggleSettings = function() {
         const el = document.getElementById("api-settings");
@@ -179,16 +220,21 @@
         const gKey = document.getElementById("gemini-key-input").value.trim();
         const tKey = document.getElementById("tmdb-key-input").value.trim();
         
-        if(gKey) {
-            localStorage.setItem("gemini_key", gKey);
-            GEMINI_KEY = gKey;
-        }
-        if(tKey) {
-            localStorage.setItem("tmdb_key", tKey);
-            TMDB_KEY = tKey;
-        }
+        if(gKey) { localStorage.setItem("gemini_key", gKey); GEMINI_KEY = gKey; }
+        if(tKey) { localStorage.setItem("tmdb_key", tKey); TMDB_KEY = tKey; }
         alert("Keys Saved! Reloading...");
         location.reload();
+    }
+
+    window.switchTab = function(mode) {
+        currentInputMode = mode;
+        // Toggle buttons
+        document.getElementById('tab-link').classList.toggle('active', mode === 'link');
+        document.getElementById('tab-file').classList.toggle('active', mode === 'file');
+        
+        // Toggle inputs
+        document.getElementById('input-container-link').style.display = mode === 'link' ? 'flex' : 'none';
+        document.getElementById('input-container-file').style.display = mode === 'file' ? 'flex' : 'none';
     }
 
     // ==========================================
@@ -233,7 +279,6 @@
         resultBox.style.display = "block";
         resultBox.innerHTML = "✨ AI is thinking...";
 
-        // Construct context from library
         const libraryTitles = allMoviesCache.map(m => m.title).join(", ");
         
         const prompt = `
@@ -248,7 +293,6 @@
         const response = await callGemini(prompt);
         resultBox.innerHTML = `🤖 <b>Gemini Says:</b><br>${response}`;
         
-        // Highlight the movie in the grid
         const pickedTitle = response.split("-")[0].trim();
         highlightMovieInGrid(pickedTitle);
     }
@@ -272,16 +316,12 @@
     }
 
     function highlightMovieInGrid(partialTitle) {
-        // Remove old highlights
         document.querySelectorAll(".card").forEach(c => c.classList.remove("highlight-card"));
-        
-        // Find best match
         const cards = Array.from(document.querySelectorAll(".card"));
         const match = cards.find(c => {
             const title = c.querySelector(".card-title").innerText.toLowerCase();
             return title.includes(partialTitle.toLowerCase()) || partialTitle.toLowerCase().includes(title);
         });
-
         if(match) {
             match.scrollIntoView({ behavior: "smooth", block: "center" });
             match.classList.add("highlight-card");
@@ -289,7 +329,7 @@
     }
 
     // ==========================================
-    // 4. STANDARD FUNCTIONS (Search, Save, Load)
+    // 4. STANDARD FUNCTIONS
     // ==========================================
     window.searchTMDB = async function() {
         const q = document.getElementById('tmdb-search').value.trim();
@@ -340,20 +380,68 @@
         tempMovie = m;
         document.getElementById('selected-title').innerText = m.title;
         document.getElementById('link-area').style.display = 'block';
-        document.getElementById('movie-link').focus();
+        if(currentInputMode === 'link') {
+            document.getElementById('movie-link').focus();
+        }
         document.getElementById('search-results').innerHTML = ""; 
     }
 
     window.saveMovie = async function() {
-        const link = document.getElementById('movie-link').value.trim();
-        if(!link) return alert("Please paste a link!");
         if(!tempMovie) return alert("Please search and select a movie first.");
 
         const btn = document.querySelector('#link-area button');
         const originalText = btn.innerText;
-        btn.innerText = "Saving...";
         btn.disabled = true;
 
+        let finalLink = "";
+
+        if(currentInputMode === 'link') {
+            // --- LINK MODE ---
+            const linkVal = document.getElementById('movie-link').value.trim();
+            if(!linkVal) { alert("Please paste a link!"); btn.disabled=false; return; }
+            finalLink = linkVal;
+            btn.innerText = "Saving Link...";
+            saveToFirestore(finalLink, btn, originalText);
+
+        } else {
+            // --- UPLOAD MODE ---
+            const fileInput = document.getElementById('movie-file');
+            const file = fileInput.files[0];
+            if(!file) { alert("Please select a file!"); btn.disabled=false; return; }
+            
+            btn.innerText = "Uploading...";
+            document.getElementById('progress-container').style.display = 'block';
+            document.getElementById('progress-text').style.display = 'block';
+
+            // Upload Logic
+            const storageRef = ref(storage, 'movies/' + Date.now() + '_' + file.name);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+
+            uploadTask.on('state_changed', 
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    document.getElementById('progress-bar').style.width = progress + '%';
+                    document.getElementById('progress-text').innerText = 'Uploading: ' + Math.round(progress) + '%';
+                }, 
+                (error) => {
+                    console.error(error);
+                    alert("Upload Failed! Did you enable Firebase Storage in 'Test Mode' in the console?");
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                }, 
+                () => {
+                    // Success
+                    getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                        finalLink = downloadURL;
+                        btn.innerText = "Saving to Library...";
+                        saveToFirestore(finalLink, btn, originalText);
+                    });
+                }
+            );
+        }
+    }
+
+    async function saveToFirestore(link, btn, originalText) {
         try {
             await addDoc(moviesCol, {
                 title: tempMovie.title,
@@ -363,15 +451,19 @@
                 createdAt: Date.now()
             });
             
+            // Reset UI
             document.getElementById('link-area').style.display = 'none';
             document.getElementById('movie-link').value = "";
+            document.getElementById('movie-file').value = ""; // Clear file
             document.getElementById('tmdb-search').value = "";
+            document.getElementById('progress-container').style.display = 'none';
+            document.getElementById('progress-text').style.display = 'none';
             btn.innerText = originalText;
             btn.disabled = false;
             loadLibrary();
         } catch(e) {
             console.error(e);
-            alert("Error saving to Firebase.");
+            alert("Error saving to Firestore DB.");
             btn.innerText = originalText;
             btn.disabled = false;
         }
@@ -387,7 +479,7 @@
             
             loader.style.display = 'none';
             grid.innerHTML = "";
-            allMoviesCache = []; // Clear cache
+            allMoviesCache = []; 
 
             if(snapshot.empty) {
                 grid.innerHTML = "<div style='color:#666; grid-column: 1/-1; text-align:center; padding: 20px;'>Library empty.</div>";
@@ -396,7 +488,6 @@
 
             snapshot.forEach(docSnap => {
                 const data = docSnap.data();
-                // Store in cache for AI
                 allMoviesCache.push(data);
 
                 const card = document.createElement('div');
@@ -431,15 +522,25 @@
         overlay.style.display = 'flex';
         slot.innerHTML = ""; 
 
+        // 1. YouTube
         if(url.includes('youtube.com') || url.includes('youtu.be')) {
             let vid = "";
             if(url.includes('v=')) vid = url.split('v=')[1].split('&')[0];
             else if(url.includes('youtu.be/')) vid = url.split('youtu.be/')[1].split('?')[0];
             slot.innerHTML = `<iframe src="https://www.youtube.com/embed/${vid}?autoplay=1" allowfullscreen></iframe>`;
-        } else if(url.includes('drive.google.com') && url.includes('/view')) {
+        } 
+        // 2. Google Drive
+        else if(url.includes('drive.google.com') && url.includes('/view')) {
             const embedUrl = url.replace('/view', '/preview');
             slot.innerHTML = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
-        } else {
+        }
+        // 3. Dropbox (Convert to raw stream)
+        else if(url.includes('dropbox.com')) {
+            const rawUrl = url.replace('dl=0', 'raw=1');
+            slot.innerHTML = `<video src="${rawUrl}" controls autoplay style="width:100%; height:100%"></video>`;
+        }
+        // 4. Standard File / Other
+        else {
             slot.innerHTML = `<video src="${url}" controls autoplay style="width:100%; height:100%"></video>`;
         }
     }
