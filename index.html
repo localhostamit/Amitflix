@@ -167,7 +167,7 @@
     let heroLink = "";
     let inputMode = 'link';
 
-    // --- 2. INIT FIREBASE (Compat Mode - Works everywhere) ---
+    // --- 2. INIT FIREBASE (Your Provided Credentials) ---
     const firebaseConfig = {
       apiKey: "AIzaSyBDZyw3vWpTuo3wKBFCtqqlbQfx1jHHqmc",
       authDomain: "movietheater-free.firebaseapp.com",
@@ -182,12 +182,11 @@
         db = firebase.firestore();
         storage = firebase.storage();
         moviesCol = db.collection("movies");
-        console.log("Firebase Initialized");
         
-        // Load Data
+        // Load Data on start
         loadLibrary();
     } catch(e) {
-        alert("Firebase Error: " + e.message);
+        alert("Firebase Config Error: " + e.message);
     }
 
     // --- 3. FUNCTIONS ---
@@ -219,6 +218,9 @@
             });
 
             setupHero();
+        }).catch(err => {
+             document.getElementById("app-loader").style.display = "none";
+             alert("Error loading library (Check Internet): " + err.message);
         });
     }
 
@@ -255,17 +257,28 @@
         document.getElementById("input-file").style.display = mode === 'file' ? 'block' : 'none';
     }
 
-    // --- SEARCH ---
+    // --- SEARCH (WITH PROXY FIX) ---
     window.searchTMDB = async function() {
         const q = document.getElementById("tmdb-search").value;
         const resDiv = document.getElementById("search-results");
         resDiv.innerHTML = "Searching...";
         
         try {
-            const req = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}`);
-            const data = await req.json();
+            let response;
+            try {
+                // Try direct first
+                response = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}`);
+            } catch(err) {
+                // Use Proxy if blocked (e.g. India)
+                const targetUrl = `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}`;
+                response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
+            }
+            
+            const data = await response.json();
             resDiv.innerHTML = "";
             
+            if(!data.results) throw new Error("No results");
+
             data.results.slice(0, 10).forEach(m => {
                 if(m.poster_path) {
                     const img = document.createElement("img");
@@ -282,7 +295,10 @@
                     resDiv.appendChild(img);
                 }
             });
-        } catch(e) { alert("Search Error"); }
+        } catch(e) { 
+            resDiv.innerHTML = "Search Error. Check internet.";
+            console.error(e);
+        }
     }
 
     // --- SAVE ---
