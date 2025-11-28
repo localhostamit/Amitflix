@@ -4,160 +4,105 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Amitflix</title>
-    <!-- Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- HLS.js for Fast Streaming -->
+    <!-- HLS.js -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
+    <!-- FIREBASE COMPAT (Universal - Works everywhere) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+
     <style>
-        /* --- NETFLIX THEME --- */
         :root { --primary: #e50914; --bg: #141414; --card: #1f1f1f; --text: #fff; }
-        body { background-color: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
         /* NAVBAR */
         header { 
-            position: fixed; top: 0; width: 100%; height: 60px; z-index: 100; 
+            position: fixed; top: 0; width: 100%; height: 60px; z-index: 2000; 
             background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
-            display: flex; justify-content: space-between; align-items: center; padding: 0 4% 0 4%; box-sizing: border-box; transition: 0.5s;
+            display: flex; justify-content: space-between; align-items: center; padding: 0 4%; box-sizing: border-box; transition: 0.3s;
         }
-        header.scrolled { background-color: #141414; }
-        .logo { color: var(--primary); font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
-        .nav-right { display: flex; gap: 15px; align-items: center; }
-        .icon-btn { cursor: pointer; font-size: 20px; color: white; transition: 0.2s; padding: 5px; }
-        
-        /* HERO SECTION */
+        header.scrolled { background-color: #141414; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .logo { color: var(--primary); font-size: 24px; font-weight: 900; letter-spacing: 1px; text-shadow: 0 0 10px black; }
+        .nav-right { display: flex; gap: 20px; }
+        .icon-btn { font-size: 22px; color: white; padding: 10px; cursor: pointer; }
+
+        /* HERO */
         .hero {
             height: 70vh; width: 100%; position: relative;
-            /* Fallback image if library is empty */
             background-image: url('https://images.unsplash.com/photo-1574267432553-4b4628081c31?q=80&w=1931&auto=format&fit=crop');
             background-size: cover; background-position: center;
             display: flex; align-items: center;
         }
-        .hero-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(to bottom, rgba(20,20,20,0.2) 0%, rgba(20,20,20,0.6) 60%, rgba(20,20,20,1) 100%);
-        }
-        .hero-content {
-            z-index: 10; padding-left: 4%; max-width: 600px; padding-top: 60px;
-        }
-        .hero-title { font-size: clamp(30px, 5vw, 60px); font-weight: 800; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); line-height: 1.1; }
-        .hero-desc { font-size: clamp(14px, 2vw, 18px); margin-bottom: 20px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); line-height: 1.4; max-height: 100px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
-        
-        .hero-btns button {
-            padding: 8px 20px; border-radius: 4px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; margin-right: 10px; display: inline-flex; align-items: center; gap: 8px;
-        }
+        .hero-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.2), #141414); }
+        .hero-content { z-index: 10; padding-left: 4%; max-width: 600px; padding-top: 50px; }
+        .hero-title { font-size: 40px; font-weight: 800; margin-bottom: 10px; line-height: 1.1; text-shadow: 2px 2px 4px black; }
+        .hero-desc { font-size: 16px; margin-bottom: 20px; text-shadow: 1px 1px 2px black; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .hero-btns button { padding: 10px 24px; border-radius: 4px; border: none; font-size: 16px; font-weight: bold; margin-right: 10px; cursor: pointer; }
         .btn-play { background: white; color: black; }
         .btn-info { background: rgba(109, 109, 110, 0.7); color: white; }
 
         /* ADD PANEL */
         #add-panel {
-            background: #181818; padding: 20px; margin: 20px 4%; border-radius: 8px; display: none; border: 1px solid #333; position: relative; z-index: 200;
+            background: #1f1f1f; padding: 20px; margin: 20px 4%; border-radius: 8px; display: none; position: relative; z-index: 100; border: 1px solid #333;
         }
-        .input-group { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-        input[type="text"], input[type="file"] { flex: 1; padding: 12px; background: #333; border: 1px solid #444; color: white; border-radius: 4px; min-width: 200px; }
-        .action-btn { padding: 12px 20px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap; }
+        input { width: 100%; padding: 12px; background: #000; border: 1px solid #444; color: white; margin-bottom: 10px; border-radius: 4px; box-sizing: border-box; }
+        .action-btn { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 16px; cursor: pointer; }
         
-        /* Tab Buttons */
-        .tab-group { display: flex; gap: 10px; margin-bottom: 15px; }
-        .tab-btn { background: #333; padding: 10px; border-radius: 4px; cursor: pointer; font-size: 14px; color: #aaa; flex: 1; text-align: center; }
+        .tab-group { display: flex; gap: 10px; margin-bottom: 10px; }
+        .tab-btn { flex: 1; padding: 10px; background: #333; text-align: center; border-radius: 4px; cursor: pointer; color: #aaa; }
         .tab-btn.active { background: white; color: black; font-weight: bold; }
 
-        /* SEARCH RESULTS */
-        #search-results { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; }
-        .search-item img { width: 100px; border-radius: 4px; }
-
-        /* LIBRARY ROWS */
+        /* LIST */
         .row { padding: 20px 4%; }
-        .row-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #e5e5e5; }
-        .row-posters {
-            display: flex; overflow-y: hidden; overflow-x: scroll; padding: 10px 0; scroll-behavior: smooth; min-height: 220px; align-items: center;
-        }
+        .row-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+        .row-posters { display: flex; overflow-x: auto; padding-bottom: 20px; gap: 10px; scroll-behavior: smooth; }
         .row-posters::-webkit-scrollbar { display: none; }
-        
-        .poster-container { position: relative; margin-right: 10px; flex-shrink: 0; }
-        .poster {
-            width: 140px; height: 210px; object-fit: cover; border-radius: 4px; transition: transform 0.3s; cursor: pointer;
-        }
-        .poster:hover { transform: scale(1.05); }
-        .delete-icon {
-            position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; width: 30px; height: 30px; border-radius: 50%; display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 5;
-        }
-        .poster-container:hover .delete-icon { display: flex; }
+        .poster-container { position: relative; flex-shrink: 0; }
+        .poster { width: 130px; height: 195px; object-fit: cover; border-radius: 4px; cursor: pointer; }
+        .delete-icon { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.8); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+        /* PLAYER */
+        #player-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 5000; align-items: center; justify-content: center; }
+        #video-container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        iframe, video { width: 100%; height: 100%; border: none; }
+        #close-player { position: absolute; top: 20px; right: 20px; background: var(--primary); width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; z-index: 5001; cursor: pointer; }
 
         /* EMPTY STATE */
-        .empty-state {
-            width: 100%; text-align: center; color: #666; padding: 20px;
-        }
-        .empty-btn {
-            margin-top: 15px; padding: 10px 20px; background: #333; color: white; border: 1px solid #444; border-radius: 4px; cursor: pointer;
-        }
+        .empty-state { text-align: center; padding: 40px 20px; color: #888; }
+        .empty-btn { margin-top: 15px; padding: 10px 25px; background: #333; color: white; border: 1px solid #555; border-radius: 4px; font-size: 16px; }
 
-        /* VIDEO PLAYER (Mobile Optimized) */
-        #player-overlay { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: black; z-index: 9999; align-items: center; justify-content: center; 
-        }
-        #video-container { 
-            width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative;
-        }
-        iframe, video { 
-            width: 100%; height: 100%; max-height: 100vh; border: none; background: black;
-        }
-        #close-player { 
-            position: absolute; top: 20px; right: 20px; 
-            background: rgba(229, 9, 20, 0.9); color: white; 
-            width: 40px; height: 40px; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            cursor: pointer; z-index: 10000; font-size: 20px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.8);
-        }
-        
-        /* SPINNER */
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 4px solid var(--primary);
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            position: absolute; z-index: 5; display: none;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* LOADING */
+        #app-loader { position: fixed; top:0; left:0; width:100%; height:100%; background:#141414; z-index: 9999; display:flex; align-items:center; justify-content:center; flex-direction: column; gap: 15px;}
+        .spinner { width: 40px; height: 40px; border: 4px solid #333; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* AI & SETTINGS MODALS */
-        #ai-overlay, #settings-modal {
-            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: #181818; border: 1px solid #333; border-radius: 8px; z-index: 3000; padding: 20px; 
-            width: 90%; max-width: 400px; box-shadow: 0 0 30px rgba(0,0,0,0.9);
-        }
-        #ai-result { margin-top: 15px; font-size: 14px; line-height: 1.5; color: #ddd; max-height: 200px; overflow-y: auto; }
-
-        @media (max-width: 600px) {
-            .hero { height: 50vh; }
-            .poster { width: 110px; height: 165px; }
-            .hero-btns button { font-size: 14px; padding: 6px 15px; }
-            #close-player { top: 15px; right: 15px; width: 35px; height: 35px; }
-        }
+        /* MODALS */
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1f1f1f; width: 90%; max-width: 400px; padding: 20px; border-radius: 8px; border: 1px solid #333; z-index: 4000; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
     </style>
 </head>
 <body>
 
-<!-- NAVBAR -->
+<!-- LOADING SCREEN -->
+<div id="app-loader">
+    <div class="spinner"></div>
+    <div style="color: #666; font-size: 14px;">Loading Cinema...</div>
+</div>
+
 <header id="navbar">
     <div class="logo" onclick="window.scrollTo(0,0)">AMITFLIX</div>
     <div class="nav-right">
-        <i class="fas fa-search icon-btn" onclick="toggleAddPanel()" style="padding:10px;"></i>
-        <i class="fas fa-robot icon-btn" onclick="toggleAI()" style="padding:10px;"></i>
-        <i class="fas fa-cog icon-btn" onclick="toggleSettings()" style="padding:10px;"></i>
+        <div class="icon-btn" onclick="toggleAddPanel()"><i class="fas fa-search"></i></div>
+        <div class="icon-btn" onclick="toggleSettings()"><i class="fas fa-cog"></i></div>
     </div>
 </header>
 
-<!-- HERO -->
 <div class="hero" id="hero">
     <div class="hero-overlay"></div>
     <div class="hero-content">
-        <div class="hero-title" id="hero-title">Welcome to Amitflix</div>
-        <div class="hero-desc" id="hero-desc">Your personal streaming collection. Start adding movies to build your library.</div>
+        <div class="hero-title" id="hero-title">Welcome</div>
+        <div class="hero-desc" id="hero-desc">Your personal library is ready.</div>
         <div class="hero-btns" id="hero-btns" style="display:none;">
             <button class="btn-play" onclick="playHero()"><i class="fas fa-play"></i> Play</button>
             <button class="btn-info"><i class="fas fa-info-circle"></i> Info</button>
@@ -165,82 +110,64 @@
     </div>
 </div>
 
-<!-- ADD PANEL -->
 <div id="add-panel">
-    <h3 style="margin-top:0">Add to Library</h3>
+    <h3 style="margin-top:0">Add Movie</h3>
     
-    <!-- Step 1: Search -->
-    <div class="input-group">
-        <input type="text" id="tmdb-search" placeholder="Search Movie Name...">
-        <button class="action-btn" onclick="searchTMDB()">Search</button>
+    <!-- SEARCH -->
+    <div style="display:flex; gap:10px; margin-bottom:10px;">
+        <input type="text" id="tmdb-search" placeholder="Movie Name...">
+        <button class="action-btn" style="width:auto;" onclick="searchTMDB()">Find</button>
     </div>
-    <div id="search-results"></div>
+    <div id="search-results" style="display:flex; gap:10px; overflow-x:auto; margin-bottom:15px;"></div>
 
-    <!-- Step 2: Source -->
-    <div id="step-2" style="display:none; border-top: 1px solid #333; margin-top:15px; padding-top:15px;">
+    <!-- SOURCE -->
+    <div id="step-2" style="display:none; border-top:1px solid #333; padding-top:15px;">
         <div class="tab-group">
             <div class="tab-btn active" id="tab-link" onclick="switchTab('link')">Link</div>
             <div class="tab-btn" id="tab-file" onclick="switchTab('file')">Upload</div>
         </div>
-        
-        <div id="input-link" class="input-group">
-            <input type="text" id="movie-link" placeholder="Paste .mp4, .m3u8, Drive, or YouTube Link">
+        <div id="input-link">
+            <input type="text" id="movie-link" placeholder="Paste Link (YouTube, Drive, etc)">
         </div>
-        <div id="input-file" class="input-group" style="display:none;">
-            <input type="file" id="movie-file" accept="video/*">
+        <div id="input-file" style="display:none;">
+            <input type="file" id="movie-file">
+            <div id="upload-progress" style="height:4px; background:#333; margin-top:5px; width:0%"></div>
         </div>
-
-        <div id="progress-container" style="display:none; height:4px; background:#333; margin-bottom:10px;"><div id="progress-bar" style="width:0%; height:100%; background:red;"></div></div>
-        
-        <button class="action-btn" style="width:100%" onclick="saveMovie()">Add <span id="selected-title"></span></button>
+        <button class="action-btn" onclick="saveMovie()">Add to Library</button>
     </div>
 </div>
 
-<!-- LIBRARY -->
 <div class="row">
     <div class="row-title">My List</div>
     <div class="row-posters" id="my-list">
-        <!-- Movies will load here -->
+        <!-- Movies Go Here -->
     </div>
 </div>
 
-<!-- PLAYER -->
 <div id="player-overlay">
     <div id="close-player" onclick="closePlayer()"><i class="fas fa-times"></i></div>
-    <div id="video-container">
-        <div class="spinner" id="loading-spinner"></div>
-    </div>
+    <div id="video-container"></div>
 </div>
 
-<!-- AI MODAL -->
-<div id="ai-overlay">
-    <h3 style="margin-top:0; color:#4285f4;"><i class="fas fa-sparkles"></i> AI Concierge</h3>
-    <input type="text" id="ai-mood" placeholder="How are you feeling?" style="width:100%; padding:10px; margin-bottom:10px; background:#333; color:white; border:none; border-radius:4px;">
-    <button class="action-btn" style="width:100%" onclick="askGemini()">Ask AI</button>
-    <div id="ai-result"></div>
-    <button onclick="toggleAI()" style="width:100%; padding:10px; background:transparent; color:#888; border:none; margin-top:10px;">Close</button>
-</div>
-
-<!-- SETTINGS -->
-<div id="settings-modal">
+<div id="settings-modal" class="modal">
     <h3>Settings</h3>
-    <input type="text" id="key-tmdb" placeholder="TMDb API Key" style="width:100%; margin-bottom:10px; padding:10px; background:#333; color:white; border:none;">
-    <input type="password" id="key-gemini" placeholder="Gemini API Key" style="width:100%; margin-bottom:10px; padding:10px; background:#333; color:white; border:none;">
-    <button class="action-btn" onclick="saveKeys()" style="width:100%">Save</button>
-    <button onclick="toggleSettings()" style="width:100%; padding:10px; background:transparent; color:#888; border:none; margin-top:10px;">Cancel</button>
+    <input type="text" id="key-tmdb" placeholder="TMDb API Key">
+    <button class="action-btn" onclick="saveKeys()">Save</button>
+    <button onclick="toggleSettings()" style="width:100%; padding:10px; background:none; color:#888; border:none; margin-top:5px;">Close</button>
 </div>
 
-<!-- LOGIC -->
-<script type="module">
-    // --- CONFIG ---
-    const DEFAULT_TMDB_KEY = "3fd2be6f0c70a2a598f084ddfb75487c"; 
-    let TMDB_KEY = localStorage.getItem("tmdb_key") || DEFAULT_TMDB_KEY;
-    let GEMINI_KEY = localStorage.getItem("gemini_key") || "";
+<script>
+    // --- 1. GLOBAL VARIABLES ---
+    const DEFAULT_TMDB = "3fd2be6f0c70a2a598f084ddfb75487c";
+    let TMDB_KEY = localStorage.getItem("tmdb_key") || DEFAULT_TMDB;
+    
+    let db, storage, moviesCol;
+    let tempMovie = null;
+    let allMovies = [];
+    let heroLink = "";
+    let inputMode = 'link';
 
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-    import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
-
+    // --- 2. INIT FIREBASE (Compat Mode - Works everywhere) ---
     const firebaseConfig = {
       apiKey: "AIzaSyBDZyw3vWpTuo3wKBFCtqqlbQfx1jHHqmc",
       authDomain: "movietheater-free.firebaseapp.com",
@@ -250,178 +177,215 @@
       appId: "1:632877715870:web:de263eac9c902b5199c68f"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
-    const moviesCol = collection(db, "movies");
-
-    let allMovies = [];
-    let tempMovie = null;
-    let inputMode = 'link';
-    let heroMovieLink = "";
-
-    window.onload = () => {
-        loadLibrary();
-        window.addEventListener("scroll", () => {
-            const nav = document.getElementById("navbar");
-            if(window.scrollY > 50) nav.classList.add("scrolled");
-            else nav.classList.remove("scrolled");
-        });
-    };
-
-    async function loadLibrary() {
-        const listDiv = document.getElementById("my-list");
-        const q = query(moviesCol, orderBy("createdAt", "desc"));
-        const snap = await getDocs(q);
+    try {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+        storage = firebase.storage();
+        moviesCol = db.collection("movies");
+        console.log("Firebase Initialized");
         
-        allMovies = [];
-        listDiv.innerHTML = "";
+        // Load Data
+        loadLibrary();
+    } catch(e) {
+        alert("Firebase Error: " + e.message);
+    }
 
-        if(snap.empty) {
-            // Show explicit "Empty State" UI
-            listDiv.innerHTML = `
-                <div class="empty-state">
-                    <div>No movies yet.</div>
-                    <button class="empty-btn" onclick="toggleAddPanel()">+ Add Your First Movie</button>
-                </div>
-            `;
-            // Keep default hero image
-            return;
-        }
+    // --- 3. FUNCTIONS ---
 
-        snap.forEach(docSnap => {
-            const m = docSnap.data();
-            m.id = docSnap.id;
-            allMovies.push(m);
+    function loadLibrary() {
+        moviesCol.orderBy("createdAt", "desc").get().then((snap) => {
+            document.getElementById("app-loader").style.display = "none"; // Hide loader
+            const list = document.getElementById("my-list");
+            list.innerHTML = "";
+            allMovies = [];
 
-            const container = document.createElement("div");
-            container.className = "poster-container";
-            container.innerHTML = `
-                <img src="https://image.tmdb.org/t/p/w500${m.poster}" class="poster" alt="${m.title}" onclick="openPlayer('${m.link}')">
-                <div class="delete-icon" onclick="deleteMovie('${m.id}')"><i class="fas fa-trash"></i></div>
-            `;
-            listDiv.appendChild(container);
+            if (snap.empty) {
+                list.innerHTML = `<div class="empty-state"><div>Library Empty</div><button class="empty-btn" onclick="toggleAddPanel()">+ Add Movie</button></div>`;
+                return;
+            }
+
+            snap.forEach(doc => {
+                const m = doc.data();
+                m.id = doc.id;
+                allMovies.push(m);
+                
+                const div = document.createElement("div");
+                div.className = "poster-container";
+                div.innerHTML = `
+                    <img src="https://image.tmdb.org/t/p/w500${m.poster}" class="poster" onclick="openPlayer('${m.link}')">
+                    <div class="delete-icon" onclick="deleteMovie('${m.id}')"><i class="fas fa-trash"></i></div>
+                `;
+                list.appendChild(div);
+            });
+
+            setupHero();
         });
-        setupHero();
     }
 
     function setupHero() {
-        const random = allMovies[Math.floor(Math.random() * allMovies.length)];
-        if(random) {
-            const bg = random.backdrop ? `https://image.tmdb.org/t/p/original${random.backdrop}` : `https://image.tmdb.org/t/p/original${random.poster}`;
+        if(allMovies.length > 0) {
+            const r = allMovies[Math.floor(Math.random() * allMovies.length)];
+            const bg = r.backdrop ? `https://image.tmdb.org/t/p/original${r.backdrop}` : `https://image.tmdb.org/t/p/original${r.poster}`;
             document.getElementById("hero").style.backgroundImage = `url('${bg}')`;
-            document.getElementById("hero-title").innerText = random.title;
-            document.getElementById("hero-desc").innerText = random.overview || "";
+            document.getElementById("hero-title").innerText = r.title;
+            document.getElementById("hero-desc").innerText = r.overview;
             document.getElementById("hero-btns").style.display = "block";
-            heroMovieLink = random.link;
+            heroLink = r.link;
         }
     }
 
-    window.toggleAddPanel = () => {
+    // --- UI TOGGLES ---
+    window.toggleAddPanel = function() {
         const p = document.getElementById("add-panel");
         p.style.display = p.style.display === "block" ? "none" : "block";
-        if(p.style.display === "block") {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+        window.scrollTo(0,0);
+    }
+    
+    window.toggleSettings = function() {
+        const p = document.getElementById("settings-modal");
+        p.style.display = p.style.display === "block" ? "none" : "block";
+        document.getElementById("key-tmdb").value = TMDB_KEY;
     }
 
-    window.searchTMDB = async () => {
+    window.switchTab = function(mode) {
+        inputMode = mode;
+        document.getElementById("tab-link").classList.toggle("active", mode === 'link');
+        document.getElementById("tab-file").classList.toggle("active", mode === 'file');
+        document.getElementById("input-link").style.display = mode === 'link' ? 'block' : 'none';
+        document.getElementById("input-file").style.display = mode === 'file' ? 'block' : 'none';
+    }
+
+    // --- SEARCH ---
+    window.searchTMDB = async function() {
         const q = document.getElementById("tmdb-search").value;
         const resDiv = document.getElementById("search-results");
         resDiv.innerHTML = "Searching...";
         
-        const url = `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}`;
         try {
-            let data;
-            try {
-                const req = await fetch(url);
-                data = await req.json();
-            } catch(e) {
-                const req = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
-                data = await req.json();
-            }
+            const req = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}`);
+            const data = await req.json();
             resDiv.innerHTML = "";
-            (data.results || []).slice(0, 10).forEach(m => {
+            
+            data.results.slice(0, 10).forEach(m => {
                 if(m.poster_path) {
                     const img = document.createElement("img");
                     img.src = `https://image.tmdb.org/t/p/w200${m.poster_path}`;
-                    img.className = "search-item";
+                    img.style.height = "100px";
+                    img.style.borderRadius = "4px";
                     img.style.cursor = "pointer";
-                    img.style.marginRight = "10px";
-                    img.onclick = () => selectMovie(m);
+                    img.onclick = () => {
+                        tempMovie = m;
+                        document.getElementById("step-2").style.display = "block";
+                        resDiv.innerHTML = ""; // clear
+                        alert("Selected: " + m.title);
+                    };
                     resDiv.appendChild(img);
                 }
             });
-        } catch(e) { resDiv.innerHTML = "Error searching."; }
+        } catch(e) { alert("Search Error"); }
     }
 
-    window.selectMovie = (m) => {
-        tempMovie = m;
-        document.getElementById("selected-title").innerText = m.title;
-        document.getElementById("step-2").style.display = "block";
-        document.getElementById("search-results").innerHTML = "";
-    }
-
-    window.switchTab = (mode) => {
-        inputMode = mode;
-        document.getElementById("tab-link").classList.toggle("active", mode === 'link');
-        document.getElementById("tab-file").classList.toggle("active", mode === 'file');
-        document.getElementById("input-link").style.display = mode === 'link' ? 'flex' : 'none';
-        document.getElementById("input-file").style.display = mode === 'file' ? 'flex' : 'none';
-    }
-
-    window.saveMovie = async () => {
-        if(!tempMovie) return alert("Select a movie");
-        let finalLink = "";
+    // --- SAVE ---
+    window.saveMovie = function() {
+        if(!tempMovie) return alert("Search for a movie first!");
         
         if(inputMode === 'link') {
-            finalLink = document.getElementById("movie-link").value;
-            if(!finalLink) return alert("Paste a link");
-            finalizeSave(finalLink);
+            const link = document.getElementById("movie-link").value;
+            if(!link) return alert("Paste a link!");
+            finalizeSave(link);
         } else {
             const file = document.getElementById("movie-file").files[0];
-            if(!file) return alert("Select a file");
-            document.getElementById("progress-container").style.display = "block";
-            const sRef = ref(storage, `movies/${Date.now()}_${file.name}`);
-            const task = uploadBytesResumable(sRef, file);
+            if(!file) return alert("Select a file!");
+            
+            const ref = storage.ref('movies/' + Date.now() + file.name);
+            const task = ref.put(file);
+            
             task.on('state_changed', 
-                (snap) => { document.getElementById("progress-bar").style.width = ((snap.bytesTransferred / snap.totalBytes) * 100) + "%"; },
+                (snap) => {
+                    const pct = (snap.bytesTransferred / snap.totalBytes) * 100;
+                    document.getElementById("upload-progress").style.width = pct + "%";
+                    document.getElementById("upload-progress").style.backgroundColor = "red";
+                },
                 (err) => alert("Upload Error"),
-                async () => { finalizeSave(await getDownloadURL(task.snapshot.ref)); }
+                () => {
+                    task.snapshot.ref.getDownloadURL().then(url => finalizeSave(url));
+                }
             );
         }
     }
 
-    async function finalizeSave(link) {
-        await addDoc(moviesCol, {
+    function finalizeSave(link) {
+        moviesCol.add({
             title: tempMovie.title,
             poster: tempMovie.poster_path,
             backdrop: tempMovie.backdrop_path,
             overview: tempMovie.overview,
             link: link,
             createdAt: Date.now()
+        }).then(() => {
+            document.getElementById("add-panel").style.display = "none";
+            document.getElementById("movie-link").value = "";
+            loadLibrary();
         });
-        document.getElementById("add-panel").style.display = "none";
-        document.getElementById("movie-link").value = "";
-        document.getElementById("progress-container").style.display = "none";
-        loadLibrary();
     }
 
-    window.deleteMovie = async (id) => {
-        if(confirm("Remove?")) {
-            await deleteDoc(doc(db, "movies", id));
-            loadLibrary();
+    window.deleteMovie = function(id) {
+        if(confirm("Delete?")) {
+            moviesCol.doc(id).delete().then(loadLibrary);
         }
     }
 
-    window.playHero = () => { if(heroMovieLink) openPlayer(heroMovieLink); }
+    window.saveKeys = function() {
+        localStorage.setItem("tmdb_key", document.getElementById("key-tmdb").value);
+        location.reload();
+    }
 
-    // --- PLAYER LOGIC (With Loader + HLS) ---
-    window.openPlayer = (url) => {
+    // --- PLAYER ---
+    window.playHero = function() { if(heroLink) openPlayer(heroLink); }
+
+    window.openPlayer = function(url) {
         const con = document.getElementById("video-container");
-        const spinner = document.getElementById("loading-spinner");
-        
         document.getElementById("player-overlay").style.display = "flex";
-        spinner.style.display = "block"; // Show loader
-        
-    
+        con.innerHTML = "";
+
+        if(url.includes("youtube") || url.includes("youtu.be")) {
+            let vid = url.split("v=")[1] || url.split("/").pop();
+            vid = vid.split("&")[0];
+            con.innerHTML = `<iframe src="https://www.youtube.com/embed/${vid}?autoplay=1" allowfullscreen></iframe>`;
+        } else if (url.includes("drive.google.com")) {
+            con.innerHTML = `<iframe src="${url.replace("/view", "/preview")}" allowfullscreen></iframe>`;
+        } else {
+            const vid = document.createElement("video");
+            vid.controls = true;
+            vid.autoplay = true;
+            vid.style.width = "100%";
+            vid.style.height = "100%";
+            
+            if(url.includes(".m3u8") && Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(vid);
+            } else {
+                vid.src = url;
+            }
+            con.appendChild(vid);
+        }
+    }
+
+    window.closePlayer = function() {
+        document.getElementById("player-overlay").style.display = "none";
+        document.getElementById("video-container").innerHTML = "";
+    }
+
+    // Scroll Header
+    window.addEventListener("scroll", () => {
+        const h = document.getElementById("navbar");
+        if(window.scrollY > 50) h.classList.add("scrolled");
+        else h.classList.remove("scrolled");
+    });
+
+</script>
+</body>
+</html>
+
+
