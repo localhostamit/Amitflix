@@ -2,556 +2,424 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Amit cinema </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Amitflix</title>
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- HLS.js for Fast Streaming -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
     <style>
-        /* --- DARK THEME STYLING --- */
-        :root { --primary: #e50914; --ai: #4285f4; --bg: #141414; --card: #1f1f1f; --text: #fff; }
-        body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        /* --- NETFLIX THEME --- */
+        :root { --primary: #e50914; --bg: #141414; --card: #1f1f1f; --text: #fff; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
-        /* Layout */
-        header { border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
-        h1 { color: var(--primary); margin: 0; text-transform: uppercase; letter-spacing: 1px; }
+        /* NAVBAR */
+        header { 
+            position: fixed; top: 0; width: 100%; height: 60px; z-index: 100; 
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+            display: flex; justify-content: space-between; align-items: center; padding: 0 4% 0 4%; box-sizing: border-box; transition: 0.5s;
+        }
+        header.scrolled { background-color: #141414; }
+        .logo { color: var(--primary); font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .nav-right { display: flex; gap: 20px; align-items: center; }
+        .icon-btn { cursor: pointer; font-size: 20px; color: white; transition: 0.2s; }
         
-        /* Standard Controls */
-        .controls { background: var(--card); padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .step-label { color: #aaa; font-size: 13px; margin-bottom: 8px; font-weight: bold; text-transform: uppercase; }
-        .input-group { display: flex; gap: 10px; }
+        /* HERO SECTION */
+        .hero {
+            height: 70vh; width: 100%; position: relative;
+            background-size: cover; background-position: center top;
+            display: flex; align-items: center;
+        }
+        .hero-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(20,20,20,0) 0%, rgba(20,20,20,0.4) 60%, rgba(20,20,20,1) 100%);
+        }
+        .hero-content {
+            z-index: 10; padding-left: 4%; max-width: 600px; padding-top: 60px;
+        }
+        .hero-title { font-size: clamp(30px, 5vw, 60px); font-weight: 800; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); line-height: 1.1; }
+        .hero-desc { font-size: clamp(14px, 2vw, 18px); margin-bottom: 20px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); line-height: 1.4; max-height: 100px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
         
-        /* Upload Tabs */
-        .tab-group { display: flex; gap: 10px; margin-bottom: 10px; }
-        .tab-btn { background: #333; border: 1px solid #444; color: #aaa; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; flex: 1; text-align: center; }
-        .tab-btn:hover { background: #444; }
-        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-        
-        /* AI Controls */
-        .ai-controls { background: linear-gradient(135deg, #1f1f1f 0%, #2a2a35 100%); border: 1px solid #444; position: relative; overflow: hidden; }
-        .ai-controls::before { content: "✨"; position: absolute; top: -10px; right: -10px; font-size: 80px; opacity: 0.1; }
-        .ai-btn { background: linear-gradient(90deg, #4285f4, #9b51e0); border: none; }
-        .ai-btn:hover { background: linear-gradient(90deg, #5c9aff, #b06bf0); box-shadow: 0 0 15px rgba(66, 133, 244, 0.4); }
-        
-        input[type="text"], input[type="password"] { flex: 1; padding: 12px; background: #000; border: 1px solid #444; color: white; border-radius: 4px; font-size: 16px; outline: none; }
-        input:focus { border-color: var(--primary); }
-        
-        /* File Input Styling */
-        input[type="file"] { background: #111; padding: 10px; border-radius: 4px; border: 1px dashed #555; width: 100%; color: #aaa; }
-        
-        button { padding: 12px 24px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        button:hover { background: #b20710; }
+        .hero-btns button {
+            padding: 8px 20px; border-radius: 4px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; margin-right: 10px; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-play { background: white; color: black; }
+        .btn-info { background: rgba(109, 109, 110, 0.7); color: white; }
 
-        /* Progress Bar */
-        #progress-container { width: 100%; background: #333; height: 6px; border-radius: 3px; margin-top: 10px; display: none; overflow: hidden; }
-        #progress-bar { width: 0%; height: 100%; background: var(--primary); transition: width 0.3s; }
-        #progress-text { font-size: 11px; color: #aaa; margin-top: 4px; text-align: right; display: none; }
-
-        /* AI Result Box */
-        #ai-result { margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-left: 4px solid var(--ai); border-radius: 4px; display: none; font-style: italic; line-height: 1.5; }
-
-        /* Search Results Area */
-        #search-results { display: flex; gap: 15px; overflow-x: auto; padding: 15px 0; }
-        .search-item { min-width: 120px; cursor: pointer; text-align: center; font-size: 12px; opacity: 0.7; transition: 0.2s; }
-        .search-item:hover { opacity: 1; transform: scale(1.05); }
-        .search-item img { width: 100%; border-radius: 6px; margin-bottom: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
-
-        /* Movie Grid */
-        h2 { border-left: 4px solid var(--primary); padding-left: 10px; margin-top: 40px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 25px; margin-top: 20px; }
+        /* ADD PANEL */
+        #add-panel {
+            background: #181818; padding: 20px; margin: 20px 4%; border-radius: 8px; display: none; border: 1px solid #333;
+        }
+        .input-group { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        input[type="text"], input[type="file"] { flex: 1; padding: 12px; background: #333; border: 1px solid #444; color: white; border-radius: 4px; min-width: 200px; }
+        .action-btn { padding: 12px 20px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap; }
         
-        .card { background: var(--card); border-radius: 6px; overflow: hidden; cursor: pointer; transition: 0.3s; position: relative; }
-        .card:hover { transform: scale(1.05); z-index: 10; box-shadow: 0 10px 20px rgba(0,0,0,0.7); }
-        .card img { width: 100%; height: 225px; object-fit: cover; }
-        .card-title { padding: 10px; font-weight: bold; font-size: 14px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
-        .delete-btn { position: absolute; top: 5px; right: 5px; background: rgba(200, 0, 0, 0.9); color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-size: 14px; display: none; z-index: 20; }
-        .card:hover .delete-btn { display: block; }
-        
-        /* Selected Highlight for AI Picker */
-        .highlight-card { box-shadow: 0 0 30px var(--ai), 0 0 10px white !important; transform: scale(1.1) !important; z-index: 20 !important; border: 2px solid white; }
+        /* Tab Buttons */
+        .tab-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab-btn { background: #333; padding: 10px; border-radius: 4px; cursor: pointer; font-size: 14px; color: #aaa; flex: 1; text-align: center; }
+        .tab-btn.active { background: white; color: black; font-weight: bold; }
 
-        /* Video Player Overlay */
-        #player-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        #video-container { width: 90%; max-width: 1100px; aspect-ratio: 16/9; background: black; position: relative; box-shadow: 0 0 50px rgba(229, 9, 20, 0.2); }
-        iframe, video { width: 100%; height: 100%; border: none; }
-        #close-btn { position: absolute; top: -40px; right: 0; color: white; cursor: pointer; font-size: 18px; font-weight: bold; background: #333; padding: 5px 15px; border-radius: 4px; }
-        #close-btn:hover { background: var(--primary); }
+        /* SEARCH RESULTS */
+        #search-results { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; }
+        .search-item img { width: 100px; border-radius: 4px; }
 
-        /* Loading Spinner */
-        #loader { text-align: center; color: #666; font-style: italic; margin-top: 20px; }
+        /* LIBRARY ROWS */
+        .row { padding: 20px 4%; }
+        .row-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #e5e5e5; }
+        .row-posters {
+            display: flex; overflow-y: hidden; overflow-x: scroll; padding: 10px 0; scroll-behavior: smooth;
+        }
+        .row-posters::-webkit-scrollbar { display: none; }
         
-        /* Settings Toggle */
-        #settings-toggle { cursor: pointer; font-size: 20px; opacity: 0.5; }
-        #settings-toggle:hover { opacity: 1; }
-        #api-settings { display: none; margin-bottom: 20px; background: #222; padding: 10px; border-radius: 4px; }
+        .poster-container { position: relative; margin-right: 10px; flex-shrink: 0; }
+        .poster {
+            width: 140px; height: 210px; object-fit: cover; border-radius: 4px; transition: transform 0.3s; cursor: pointer;
+        }
+        .poster:hover { transform: scale(1.05); }
+        .delete-icon {
+            position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; width: 30px; height: 30px; border-radius: 50%; display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 5;
+        }
+        .poster-container:hover .delete-icon { display: flex; }
+
+        /* VIDEO PLAYER (Mobile Optimized) */
+        #player-overlay { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: black; z-index: 9999; align-items: center; justify-content: center; 
+        }
+        #video-container { 
+            width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative;
+        }
+        iframe, video { 
+            width: 100%; height: 100%; max-height: 100vh; border: none; background: black;
+        }
+        #close-player { 
+            position: absolute; top: 20px; right: 20px; 
+            background: rgba(229, 9, 20, 0.9); color: white; 
+            width: 40px; height: 40px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; z-index: 10000; font-size: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.8);
+        }
+        
+        /* SPINNER */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            z-index: 5;
+            display: none; /* Hidden by default */
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* AI & SETTINGS MODALS */
+        #ai-overlay, #settings-modal {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #181818; border: 1px solid #333; border-radius: 8px; z-index: 3000; padding: 20px; 
+            width: 90%; max-width: 400px; box-shadow: 0 0 30px rgba(0,0,0,0.9);
+        }
+        #ai-result { margin-top: 15px; font-size: 14px; line-height: 1.5; color: #ddd; max-height: 200px; overflow-y: auto; }
+
+        @media (max-width: 600px) {
+            .hero { height: 50vh; }
+            .poster { width: 110px; height: 165px; }
+            .hero-btns button { font-size: 14px; padding: 6px 15px; }
+            #close-player { top: 15px; right: 15px; width: 35px; height: 35px; }
+        }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>My Cloud Cinema</h1>
-    <div style="display:flex; gap: 15px; align-items:center;">
-        <div style="font-size: 12px; color: #888;">Private Library</div>
-        <span id="settings-toggle" onclick="toggleSettings()">⚙️</span>
+<!-- NAVBAR -->
+<header id="navbar">
+    <div class="logo" onclick="window.scrollTo(0,0)">AMITFLIX</div>
+    <div class="nav-right">
+        <i class="fas fa-search icon-btn" onclick="toggleAddPanel()" style="padding:10px;"></i>
+        <i class="fas fa-robot icon-btn" onclick="toggleAI()" style="padding:10px;"></i>
+        <i class="fas fa-cog icon-btn" onclick="toggleSettings()" style="padding:10px;"></i>
     </div>
 </header>
 
-<div id="api-settings">
-    <div class="step-label">API Keys Configuration</div>
-    <input type="password" id="gemini-key-input" placeholder="Paste Gemini API Key Here" style="margin-bottom:5px;">
-    <input type="text" id="tmdb-key-input" placeholder="Paste TMDb API Key Here (Optional override)">
-    <button onclick="saveKeys()" style="margin-top:5px; padding: 5px 10px;">Save Keys</button>
+<!-- HERO -->
+<div class="hero" id="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <div class="hero-title" id="hero-title">Welcome to Amitflix</div>
+        <div class="hero-desc" id="hero-desc">Your personal streaming collection. Add movies to get started.</div>
+        <div class="hero-btns" id="hero-btns" style="display:none;">
+            <button class="btn-play" onclick="playHero()"><i class="fas fa-play"></i> Play</button>
+            <button class="btn-info"><i class="fas fa-info-circle"></i> Info</button>
+        </div>
+    </div>
 </div>
 
-<!-- AI ASSISTANT SECTION -->
-<div class="controls ai-controls">
-    <div class="step-label" style="color: #8ab4f8;">✨ AI Concierge (Powered by Gemini)</div>
+<!-- ADD PANEL -->
+<div id="add-panel">
+    <h3 style="margin-top:0">Add to Library</h3>
+    
+    <!-- Step 1: Search -->
     <div class="input-group">
-        <input type="text" id="ai-mood" placeholder="How are you feeling? (e.g., 'I want 80s action' or 'Something sad')">
-        <button class="ai-btn" onclick="askGeminiPicker()">✨ Pick for Me</button>
-    </div>
-    <div style="margin-top: 10px;">
-        <button class="ai-btn" style="background: transparent; border: 1px solid #555; font-size: 12px; padding: 8px;" onclick="askGeminiJudge()">✨ Judge My Taste</button>
-    </div>
-    <div id="ai-result"></div>
-</div>
-
-<!-- STEP 1: Search TMDb -->
-<div class="controls">
-    <div class="step-label">Step 1: Find Movie Metadata</div>
-    <div class="input-group">
-        <input type="text" id="tmdb-search" placeholder="Enter movie name (e.g. Iron Man)">
-        <button onclick="searchTMDB()">Search</button>
+        <input type="text" id="tmdb-search" placeholder="Search Movie Name...">
+        <button class="action-btn" onclick="searchTMDB()">Search</button>
     </div>
     <div id="search-results"></div>
+
+    <!-- Step 2: Source -->
+    <div id="step-2" style="display:none; border-top: 1px solid #333; margin-top:15px; padding-top:15px;">
+        <div class="tab-group">
+            <div class="tab-btn active" id="tab-link" onclick="switchTab('link')">Link</div>
+            <div class="tab-btn" id="tab-file" onclick="switchTab('file')">Upload</div>
+        </div>
+        
+        <div id="input-link" class="input-group">
+            <input type="text" id="movie-link" placeholder="Paste .mp4, .m3u8, Drive, or YouTube Link">
+        </div>
+        <div id="input-file" class="input-group" style="display:none;">
+            <input type="file" id="movie-file" accept="video/*">
+        </div>
+
+        <div id="progress-container" style="display:none; height:4px; background:#333; margin-bottom:10px;"><div id="progress-bar" style="width:0%; height:100%; background:red;"></div></div>
+        
+        <button class="action-btn" style="width:100%" onclick="saveMovie()">Add <span id="selected-title"></span></button>
+    </div>
 </div>
 
-<!-- STEP 2: Paste Link OR Upload File -->
-<div class="controls" id="link-area" style="display:none; border-color: var(--primary);">
-    <div class="step-label" style="color: var(--primary);">Step 2: Add Movie Source for <span id="selected-title" style="color:white">...</span></div>
-    
-    <!-- Tabs -->
-    <div class="tab-group">
-        <div class="tab-btn active" id="tab-link" onclick="switchTab('link')">🔗 Free Link (Best)</div>
-        <div class="tab-btn" id="tab-file" onclick="switchTab('file')">📂 Upload (5GB Limit)</div>
-    </div>
-
-    <!-- Link Input -->
-    <div id="input-container-link" class="input-group" style="flex-direction: column;">
-        <input type="text" id="movie-link" placeholder="Paste YouTube, Google Drive, or Dropbox link here">
-        <div style="font-size: 11px; color: #888; margin-top:5px;">
-            💡 <b>Tip:</b> Upload to Google Drive (15GB Free) or Dropbox (2GB Free) and paste the share link here to save storage space!
-        </div>
-    </div>
-
-    <!-- File Input -->
-    <div id="input-container-file" class="input-group" style="display:none; flex-direction: column;">
-        <input type="file" id="movie-file" accept="video/mp4,video/x-m4v,video/*">
-        <div style="font-size: 11px; color: #888; margin-top:5px;">
-            ⚠️ <b>Warning:</b> Direct uploads are limited to 5GB total (Firebase Free Tier). Use the "Link" tab for unlimited storage.
-        </div>
-    </div>
-
-    <!-- Progress Bar (for uploads) -->
-    <div id="progress-container">
-        <div id="progress-bar"></div>
-    </div>
-    <div id="progress-text">Uploading: 0%</div>
-
-    <button onclick="saveMovie()" style="width: 100%; margin-top: 15px;">Add to Library</button>
+<!-- LIBRARY -->
+<div class="row">
+    <div class="row-title">My List</div>
+    <div class="row-posters" id="my-list"></div>
 </div>
 
-<!-- Library Grid -->
-<h2>My Collection</h2>
-<div id="loader">Loading your movies from the cloud...</div>
-<div class="grid" id="grid"></div>
-
-<!-- Video Player Modal -->
+<!-- PLAYER -->
 <div id="player-overlay">
+    <div id="close-player" onclick="closePlayer()"><i class="fas fa-times"></i></div>
     <div id="video-container">
-        <div id="close-btn" onclick="closePlayer()">✕ Close Player</div>
-        <div id="video-slot"></div>
+        <div class="spinner" id="loading-spinner"></div>
     </div>
 </div>
 
-<!-- LOGIC SCRIPT -->
+<!-- AI MODAL -->
+<div id="ai-overlay">
+    <h3 style="margin-top:0; color:#4285f4;"><i class="fas fa-sparkles"></i> AI Concierge</h3>
+    <input type="text" id="ai-mood" placeholder="How are you feeling?" style="width:100%; padding:10px; margin-bottom:10px; background:#333; color:white; border:none; border-radius:4px;">
+    <button class="action-btn" style="width:100%" onclick="askGemini()">Ask AI</button>
+    <div id="ai-result"></div>
+    <button onclick="toggleAI()" style="width:100%; padding:10px; background:transparent; color:#888; border:none; margin-top:10px;">Close</button>
+</div>
+
+<!-- SETTINGS -->
+<div id="settings-modal">
+    <h3>Settings</h3>
+    <input type="text" id="key-tmdb" placeholder="TMDb API Key" style="width:100%; margin-bottom:10px; padding:10px; background:#333; color:white; border:none;">
+    <input type="password" id="key-gemini" placeholder="Gemini API Key" style="width:100%; margin-bottom:10px; padding:10px; background:#333; color:white; border:none;">
+    <button class="action-btn" onclick="saveKeys()" style="width:100%">Save</button>
+    <button onclick="toggleSettings()" style="width:100%; padding:10px; background:transparent; color:#888; border:none; margin-top:10px;">Cancel</button>
+</div>
+
+<!-- LOGIC -->
 <script type="module">
-    // ==========================================
-    // 1. CONFIGURATION & SETUP
-    // ==========================================
-    
+    // --- CONFIG ---
     const DEFAULT_TMDB_KEY = "3fd2be6f0c70a2a598f084ddfb75487c"; 
-    
     let TMDB_KEY = localStorage.getItem("tmdb_key") || DEFAULT_TMDB_KEY;
     let GEMINI_KEY = localStorage.getItem("gemini_key") || "";
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-    // IMPORT STORAGE
     import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBDZyw3vWpTuo3wKBFCtqqlbQfx1jHHqmc",
       authDomain: "movietheater-free.firebaseapp.com",
       projectId: "movietheater-free",
-      storageBucket: "movietheater-free.firebasestorage.app", // Enabled for uploads
+      storageBucket: "movietheater-free.firebasestorage.app",
       messagingSenderId: "632877715870",
       appId: "1:632877715870:web:de263eac9c902b5199c68f"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const storage = getStorage(app); // Init storage
+    const storage = getStorage(app);
     const moviesCol = collection(db, "movies");
 
+    let allMovies = [];
     let tempMovie = null;
-    let allMoviesCache = [];
-    let currentInputMode = 'link'; // 'link' or 'file'
+    let inputMode = 'link';
+    let heroMovieLink = "";
 
-    // ==========================================
-    // 2. UI HELPERS
-    // ==========================================
-    window.toggleSettings = function() {
-        const el = document.getElementById("api-settings");
-        el.style.display = el.style.display === "block" ? "none" : "block";
-        document.getElementById("gemini-key-input").value = GEMINI_KEY;
-        document.getElementById("tmdb-key-input").value = TMDB_KEY === DEFAULT_TMDB_KEY ? "" : TMDB_KEY;
-    }
-
-    window.saveKeys = function() {
-        const gKey = document.getElementById("gemini-key-input").value.trim();
-        const tKey = document.getElementById("tmdb-key-input").value.trim();
-        
-        if(gKey) { localStorage.setItem("gemini_key", gKey); GEMINI_KEY = gKey; }
-        if(tKey) { localStorage.setItem("tmdb_key", tKey); TMDB_KEY = tKey; }
-        alert("Keys Saved! Reloading...");
-        location.reload();
-    }
-
-    window.switchTab = function(mode) {
-        currentInputMode = mode;
-        // Toggle buttons
-        document.getElementById('tab-link').classList.toggle('active', mode === 'link');
-        document.getElementById('tab-file').classList.toggle('active', mode === 'file');
-        
-        // Toggle inputs
-        document.getElementById('input-container-link').style.display = mode === 'link' ? 'flex' : 'none';
-        document.getElementById('input-container-file').style.display = mode === 'file' ? 'flex' : 'none';
-    }
-
-    // ==========================================
-    // 3. AI GEMINI FUNCTIONS
-    // ==========================================
-    
-    async function callGemini(promptText) {
-        if(!GEMINI_KEY) {
-            alert("Please click the ⚙️ icon and paste your Gemini API Key first!");
-            return null;
-        }
-        
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_KEY}`;
-        
-        const payload = {
-            contents: [{
-                parts: [{ text: promptText }]
-            }]
-        };
-
-        try {
-            const res = await fetch(url, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-            const data = await res.json();
-            return data.candidates?.[0]?.content?.parts?.[0]?.text || "AI Error";
-        } catch(e) {
-            console.error(e);
-            return "Connection Error";
-        }
-    }
-
-    window.askGeminiPicker = async function() {
-        const mood = document.getElementById("ai-mood").value;
-        const resultBox = document.getElementById("ai-result");
-        
-        if(!allMoviesCache.length) return alert("Your library is empty!");
-        if(!mood) return alert("Tell the AI how you are feeling first.");
-
-        resultBox.style.display = "block";
-        resultBox.innerHTML = "✨ AI is thinking...";
-
-        const libraryTitles = allMoviesCache.map(m => m.title).join(", ");
-        
-        const prompt = `
-        I have a personal movie library with these titles: [${libraryTitles}].
-        My current mood/request is: "${mood}".
-        
-        Task: Pick the ONE single best movie from my library that matches this mood.
-        Output format: Just the movie title, followed by a dash, and then a fun 1-sentence explanation of why.
-        Example: "Iron Man - Because you need some explosive ego to cheer you up."
-        `;
-
-        const response = await callGemini(prompt);
-        resultBox.innerHTML = `🤖 <b>Gemini Says:</b><br>${response}`;
-        
-        const pickedTitle = response.split("-")[0].trim();
-        highlightMovieInGrid(pickedTitle);
-    }
-
-    window.askGeminiJudge = async function() {
-        const resultBox = document.getElementById("ai-result");
-        if(!allMoviesCache.length) return alert("Your library is empty!");
-
-        resultBox.style.display = "block";
-        resultBox.innerHTML = "✨ AI is judging you...";
-        
-        const libraryTitles = allMoviesCache.map(m => m.title).join(", ");
-        const prompt = `
-        Look at this list of movies in a user's library: [${libraryTitles}].
-        Roast this person's taste in movies. Be funny, slightly mean, but insightful. 
-        Keep it to 2 short sentences.
-        `;
-
-        const response = await callGemini(prompt);
-        resultBox.innerHTML = `🤖 <b>Gemini Judge:</b><br>${response}`;
-    }
-
-    function highlightMovieInGrid(partialTitle) {
-        document.querySelectorAll(".card").forEach(c => c.classList.remove("highlight-card"));
-        const cards = Array.from(document.querySelectorAll(".card"));
-        const match = cards.find(c => {
-            const title = c.querySelector(".card-title").innerText.toLowerCase();
-            return title.includes(partialTitle.toLowerCase()) || partialTitle.toLowerCase().includes(title);
+    window.onload = () => {
+        loadLibrary();
+        window.addEventListener("scroll", () => {
+            const nav = document.getElementById("navbar");
+            if(window.scrollY > 50) nav.classList.add("scrolled");
+            else nav.classList.remove("scrolled");
         });
-        if(match) {
-            match.scrollIntoView({ behavior: "smooth", block: "center" });
-            match.classList.add("highlight-card");
+    };
+
+    async function loadLibrary() {
+        const listDiv = document.getElementById("my-list");
+        const q = query(moviesCol, orderBy("createdAt", "desc"));
+        const snap = await getDocs(q);
+        
+        allMovies = [];
+        listDiv.innerHTML = "";
+
+        if(snap.empty) {
+            document.getElementById("hero").style.backgroundImage = "url('https://assets.nflxext.com/ffe/siteui/vlv3/f841d4c7-10e1-40af-bcae-07a3f8dc141a/f6d7434e-d6de-4185-a6d4-c77a2d08737b/US-en-20220502-popsignuptwoweeks-perspective_alpha_website_medium.jpg')";
+            return;
+        }
+
+        snap.forEach(docSnap => {
+            const m = docSnap.data();
+            m.id = docSnap.id;
+            allMovies.push(m);
+
+            const container = document.createElement("div");
+            container.className = "poster-container";
+            container.innerHTML = `
+                <img src="https://image.tmdb.org/t/p/w500${m.poster}" class="poster" alt="${m.title}" onclick="openPlayer('${m.link}')">
+                <div class="delete-icon" onclick="deleteMovie('${m.id}')"><i class="fas fa-trash"></i></div>
+            `;
+            listDiv.appendChild(container);
+        });
+        setupHero();
+    }
+
+    function setupHero() {
+        const random = allMovies[Math.floor(Math.random() * allMovies.length)];
+        if(random) {
+            const bg = random.backdrop ? `https://image.tmdb.org/t/p/original${random.backdrop}` : `https://image.tmdb.org/t/p/original${random.poster}`;
+            document.getElementById("hero").style.backgroundImage = `url('${bg}')`;
+            document.getElementById("hero-title").innerText = random.title;
+            document.getElementById("hero-desc").innerText = random.overview || "";
+            document.getElementById("hero-btns").style.display = "block";
+            heroMovieLink = random.link;
         }
     }
 
-    // ==========================================
-    // 4. STANDARD FUNCTIONS
-    // ==========================================
-    window.searchTMDB = async function() {
-        const q = document.getElementById('tmdb-search').value.trim();
-        if(!q) return alert("Please type a movie name!");
+    window.toggleAddPanel = () => {
+        const p = document.getElementById("add-panel");
+        p.style.display = p.style.display === "block" ? "none" : "block";
+    }
+
+    window.searchTMDB = async () => {
+        const q = document.getElementById("tmdb-search").value;
+        const resDiv = document.getElementById("search-results");
+        resDiv.innerHTML = "Searching...";
         
-        const resultsDiv = document.getElementById('search-results');
-        resultsDiv.innerHTML = "<div style='color:#888; padding:10px;'>Searching database...</div>";
-
-        const directUrl = `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}`;
-
+        const url = `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}`;
         try {
-            let res;
+            let data;
             try {
-                res = await fetch(directUrl);
-            } catch (networkError) {
-                console.warn("Direct connection failed, using proxy...");
-                res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(directUrl)}`);
+                const req = await fetch(url);
+                data = await req.json();
+            } catch(e) {
+                const req = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+                data = await req.json();
             }
-
-            if(!res.ok) throw new Error("API request failed");
-            const data = await res.json();
-            resultsDiv.innerHTML = "";
-
-            if(!data.results || data.results.length === 0) {
-                resultsDiv.innerHTML = "<div style='padding:10px;'>No movies found.</div>";
-                return;
-            }
-
-            data.results.slice(0, 10).forEach(m => {
+            resDiv.innerHTML = "";
+            (data.results || []).slice(0, 10).forEach(m => {
                 if(m.poster_path) {
-                    const item = document.createElement('div');
-                    item.className = 'search-item';
-                    item.innerHTML = `
-                        <img src="https://image.tmdb.org/t/p/w185${m.poster_path}">
-                        <div>${m.title} (${m.release_date ? m.release_date.substring(0,4) : 'N/A'})</div>
-                    `;
-                    item.onclick = () => selectMovieForAdd(m);
-                    resultsDiv.appendChild(item);
+                    const img = document.createElement("img");
+                    img.src = `https://image.tmdb.org/t/p/w200${m.poster_path}`;
+                    img.className = "search-item";
+                    img.style.cursor = "pointer";
+                    img.style.marginRight = "10px";
+                    img.onclick = () => selectMovie(m);
+                    resDiv.appendChild(img);
                 }
             });
-        } catch(e) {
-            console.error(e);
-            resultsDiv.innerHTML = "<div style='color:red; padding:10px;'>Connection failed.</div>";
-        }
+        } catch(e) { resDiv.innerHTML = "Error searching."; }
     }
 
-    window.selectMovieForAdd = function(m) {
+    window.selectMovie = (m) => {
         tempMovie = m;
-        document.getElementById('selected-title').innerText = m.title;
-        document.getElementById('link-area').style.display = 'block';
-        if(currentInputMode === 'link') {
-            document.getElementById('movie-link').focus();
-        }
-        document.getElementById('search-results').innerHTML = ""; 
+        document.getElementById("selected-title").innerText = m.title;
+        document.getElementById("step-2").style.display = "block";
+        document.getElementById("search-results").innerHTML = "";
     }
 
-    window.saveMovie = async function() {
-        if(!tempMovie) return alert("Please search and select a movie first.");
+    window.switchTab = (mode) => {
+        inputMode = mode;
+        document.getElementById("tab-link").classList.toggle("active", mode === 'link');
+        document.getElementById("tab-file").classList.toggle("active", mode === 'file');
+        document.getElementById("input-link").style.display = mode === 'link' ? 'flex' : 'none';
+        document.getElementById("input-file").style.display = mode === 'file' ? 'flex' : 'none';
+    }
 
-        const btn = document.querySelector('#link-area button');
-        const originalText = btn.innerText;
-        btn.disabled = true;
-
+    window.saveMovie = async () => {
+        if(!tempMovie) return alert("Select a movie");
         let finalLink = "";
-
-        if(currentInputMode === 'link') {
-            // --- LINK MODE ---
-            const linkVal = document.getElementById('movie-link').value.trim();
-            if(!linkVal) { alert("Please paste a link!"); btn.disabled=false; return; }
-            finalLink = linkVal;
-            btn.innerText = "Saving Link...";
-            saveToFirestore(finalLink, btn, originalText);
-
+        
+        if(inputMode === 'link') {
+            finalLink = document.getElementById("movie-link").value;
+            if(!finalLink) return alert("Paste a link");
+            finalizeSave(finalLink);
         } else {
-            // --- UPLOAD MODE ---
-            const fileInput = document.getElementById('movie-file');
-            const file = fileInput.files[0];
-            if(!file) { alert("Please select a file!"); btn.disabled=false; return; }
-            
-            btn.innerText = "Uploading...";
-            document.getElementById('progress-container').style.display = 'block';
-            document.getElementById('progress-text').style.display = 'block';
-
-            // Upload Logic
-            const storageRef = ref(storage, 'movies/' + Date.now() + '_' + file.name);
-            const uploadTask = uploadBytesResumable(storageRef, file);
-
-            uploadTask.on('state_changed', 
-                (snapshot) => {
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    document.getElementById('progress-bar').style.width = progress + '%';
-                    document.getElementById('progress-text').innerText = 'Uploading: ' + Math.round(progress) + '%';
-                }, 
-                (error) => {
-                    console.error(error);
-                    alert("Upload Failed! Did you enable Firebase Storage in 'Test Mode' in the console?");
-                    btn.innerText = originalText;
-                    btn.disabled = false;
-                }, 
-                () => {
-                    // Success
-                    getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                        finalLink = downloadURL;
-                        btn.innerText = "Saving to Library...";
-                        saveToFirestore(finalLink, btn, originalText);
-                    });
-                }
+            const file = document.getElementById("movie-file").files[0];
+            if(!file) return alert("Select a file");
+            document.getElementById("progress-container").style.display = "block";
+            const sRef = ref(storage, `movies/${Date.now()}_${file.name}`);
+            const task = uploadBytesResumable(sRef, file);
+            task.on('state_changed', 
+                (snap) => { document.getElementById("progress-bar").style.width = ((snap.bytesTransferred / snap.totalBytes) * 100) + "%"; },
+                (err) => alert("Upload Error"),
+                async () => { finalizeSave(await getDownloadURL(task.snapshot.ref)); }
             );
         }
     }
 
-    async function saveToFirestore(link, btn, originalText) {
-        try {
-            await addDoc(moviesCol, {
-                title: tempMovie.title,
-                poster: tempMovie.poster_path,
-                overview: tempMovie.overview,
-                link: link,
-                createdAt: Date.now()
-            });
-            
-            // Reset UI
-            document.getElementById('link-area').style.display = 'none';
-            document.getElementById('movie-link').value = "";
-            document.getElementById('movie-file').value = ""; // Clear file
-            document.getElementById('tmdb-search').value = "";
-            document.getElementById('progress-container').style.display = 'none';
-            document.getElementById('progress-text').style.display = 'none';
-            btn.innerText = originalText;
-            btn.disabled = false;
-            loadLibrary();
-        } catch(e) {
-            console.error(e);
-            alert("Error saving to Firestore DB.");
-            btn.innerText = originalText;
-            btn.disabled = false;
-        }
+    async function finalizeSave(link) {
+        await addDoc(moviesCol, {
+            title: tempMovie.title,
+            poster: tempMovie.poster_path,
+            backdrop: tempMovie.backdrop_path,
+            overview: tempMovie.overview,
+            link: link,
+            createdAt: Date.now()
+        });
+        document.getElementById("add-panel").style.display = "none";
+        document.getElementById("movie-link").value = "";
+        document.getElementById("progress-container").style.display = "none";
+        loadLibrary();
     }
 
-    window.loadLibrary = async function() {
-        const grid = document.getElementById('grid');
-        const loader = document.getElementById('loader');
-        
-        try {
-            const q = query(moviesCol, orderBy("createdAt", "desc"));
-            const snapshot = await getDocs(q);
-            
-            loader.style.display = 'none';
-            grid.innerHTML = "";
-            allMoviesCache = []; 
-
-            if(snapshot.empty) {
-                grid.innerHTML = "<div style='color:#666; grid-column: 1/-1; text-align:center; padding: 20px;'>Library empty.</div>";
-                return;
-            }
-
-            snapshot.forEach(docSnap => {
-                const data = docSnap.data();
-                allMoviesCache.push(data);
-
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <div class="delete-btn" onclick="deleteMovie('${docSnap.id}', event)">✕</div>
-                    <img src="https://image.tmdb.org/t/p/w500${data.poster}" alt="${data.title}">
-                    <div class="card-title">${data.title}</div>
-                `;
-                card.onclick = (e) => {
-                    if(!e.target.classList.contains('delete-btn')) openPlayer(data.link);
-                };
-                grid.appendChild(card);
-            });
-        } catch(e) {
-            console.error(e);
-            loader.innerText = "Error loading library.";
-        }
-    }
-
-    window.deleteMovie = async function(id, e) {
-        e.stopPropagation();
-        if(confirm("Remove this movie?")) {
+    window.deleteMovie = async (id) => {
+        if(confirm("Remove?")) {
             await deleteDoc(doc(db, "movies", id));
             loadLibrary();
         }
     }
 
-    window.openPlayer = function(url) {
-        const overlay = document.getElementById('player-overlay');
-        const slot = document.getElementById('video-slot');
-        overlay.style.display = 'flex';
-        slot.innerHTML = ""; 
+    window.playHero = () => { if(heroMovieLink) openPlayer(heroMovieLink); }
+
+    // --- PLAYER LOGIC (With Loader + HLS) ---
+    window.openPlayer = (url) => {
+        const con = document.getElementById("video-container");
+        const spinner = document.getElementById("loading-spinner");
+        
+        document.getElementById("player-overlay").style.display = "flex";
+        spinner.style.display = "block"; // Show loader
+        
+        // Remove old video elements to stop audio
+        const oldVid = con.querySelector('video, iframe');
+        if(oldVid) oldVid.remove();
 
         // 1. YouTube
-        if(url.includes('youtube.com') || url.includes('youtu.be')) {
-            let vid = "";
-            if(url.includes('v=')) vid = url.split('v=')[1].split('&')[0];
-            else if(url.includes('youtu.be/')) vid = url.split('youtu.be/')[1].split('?')[0];
-            slot.innerHTML = `<iframe src="https://www.youtube.com/embed/${vid}?autoplay=1" allowfullscreen></iframe>`;
+        if(url.includes("youtube.com") || url.includes("youtu.be")) {
+            spinner.style.display = "none";
+            let vid = url.split("v=")[1] || url.split("/").pop();
+            vid = vid.split("&")[0];
+            const iframe = document.createElement('iframe');
+            iframe.src = `https://www.youtube.com/embed/${vid}?autoplay=1`;
+            iframe.allowFullscreen = true;
+            con.appendChild(iframe);
         } 
         // 2. Google Drive
-        else if(url.includes('drive.google.com') && url.includes('/view')) {
-            const embedUrl = url.replace('/view', '/preview');
-            slot.innerHTML = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
-        }
-        // 3. Dropbox (Convert to raw stream)
-        else if(url.includes('dropbox.com')) {
-            const rawUrl = url.replace('dl=0', 'raw=1');
-            slot.innerHTML = `<video src="${rawUrl}" controls autoplay style="width:100%; height:100%"></video>`;
-        }
-        // 4. Standard File / Other
-        else {
-            slot.innerHTML = `<video src="${url}" controls autoplay style="width:100%; height:100%"></video>`;
-        }
-    }
-
-    window.closePlayer = function() {
-        document.getElementById('player-overlay').style.display = 'none';
-        document.getElementById('video-slot').innerHTML = ""; 
-    }
-
-    loadLibrary();
-
-</script>
-</body>
-</html>
+        else if (url.includes("drive.google.com")) {
+            spinner.style.display = "none";
+            const iframe = document.createElement('iframe');
+            iframe.src = url.r
