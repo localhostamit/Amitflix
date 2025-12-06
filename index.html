@@ -16,7 +16,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
     <style>
-        :root { --primary: #e50914; --bg: #141414; --text: #fff; }
+        :root { --primary: #e50914; --bg: #141414; --card: #1f1f1f; --text: #fff; }
         body { background-color: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
         /* SCROLLBAR */
@@ -33,34 +33,54 @@
         header { padding: 15px 4%; display: flex; justify-content: space-between; background: linear-gradient(black, transparent); position: fixed; width: 100%; top: 0; z-index: 100; box-sizing: border-box; transition: 0.3s; }
         header.scrolled { background-color: #141414; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         .logo { color: var(--primary); font-weight: 900; font-size: 24px; letter-spacing: 1px; text-shadow: 0 0 10px black; cursor: pointer; }
-        .nav-icons i { font-size: 22px; margin-left: 20px; cursor: pointer; color: white; text-shadow: 0 0 5px black; }
+        .nav-icons { display: flex; align-items: center; gap: 20px; }
+        .nav-icons i { font-size: 22px; cursor: pointer; color: white; text-shadow: 0 0 5px black; transition: 0.2s; }
+        .nav-icons i:hover { color: var(--primary); }
 
         .hero { height: 70vh; background-size: cover; background-position: center; display: flex; align-items: center; position: relative; }
         .hero::after { content:''; position: absolute; inset:0; background: linear-gradient(to bottom, rgba(0,0,0,0.2), #141414); }
         .hero-content { z-index: 10; padding-left: 4%; max-width: 600px; padding-top: 60px; }
-        .hero-title { font-size: 40px; font-weight: 800; margin-bottom: 10px; line-height: 1.1; text-shadow: 2px 2px 4px black; }
+        .hero-title { font-size: clamp(30px, 5vw, 50px); font-weight: 800; margin-bottom: 10px; line-height: 1.1; text-shadow: 2px 2px 4px black; }
         .hero-desc { font-size: 16px; margin-bottom: 20px; text-shadow: 1px 1px 2px black; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; opacity: 0.9; }
-        
+        .btn-play { padding: 10px 30px; background: white; color: black; border: none; font-weight: bold; border-radius: 4px; cursor: pointer; display: none; font-size: 16px; transition: 0.2s; }
+        .btn-play:hover { background: #ddd; }
+
         .row { padding: 20px 4%; }
         .row-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; border-left: 4px solid var(--primary); padding-left: 10px; }
         .posters { display: flex; overflow-x: auto; gap: 12px; padding-bottom: 20px; }
-        .poster-card { position: relative; flex-shrink: 0; transition: transform 0.2s; }
-        .poster-card:hover { transform: scale(1.05); z-index: 10; }
+        .poster-container { position: relative; flex-shrink: 0; transition: transform 0.2s; }
+        .poster-container:hover { transform: scale(1.05); z-index: 10; }
         .poster { width: 130px; height: 195px; object-fit: cover; border-radius: 6px; background: #222; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
-        .poster-badge { position: absolute; top: 5px; left: 5px; background: rgba(0,0,0,0.8); color: var(--primary); font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        .poster-badge { position: absolute; top: 5px; left: 5px; background: rgba(0,0,0,0.8); color: var(--primary); font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
+        .delete-icon { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.8); width: 25px; height: 25px; border-radius: 50%; display: none; align-items: center; justify-content: center; cursor: pointer; color: white; font-size: 12px; }
+        .poster-container:hover .delete-icon { display: flex; }
         
         /* MODAL */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal-box { background: #1f1f1f; padding: 25px; border-radius: 8px; width: 90%; max-width: 450px; border: 1px solid #333; max-height: 85vh; overflow-y: auto; box-shadow: 0 0 50px black; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-box { background: #1f1f1f; padding: 25px; border-radius: 8px; width: 90%; max-width: 500px; border: 1px solid #333; max-height: 85vh; overflow-y: auto; box-shadow: 0 0 50px black; position: relative; }
+        .modal-close { position: absolute; top: 15px; right: 15px; font-size: 20px; cursor: pointer; color: #888; }
+        .modal-title { font-size: 22px; font-weight: bold; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+
         input, select { width: 100%; padding: 12px; background: #000; border: 1px solid #444; color: white; margin-bottom: 10px; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
-        button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 15px; }
+        .action-btn { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s; border-radius: 4px; }
+        .action-btn:hover { background: #b20710; }
         
         .type-toggle { display: flex; gap: 10px; margin-bottom: 15px; }
-        .type-btn { flex: 1; padding: 10px; background: #333; text-align: center; border-radius: 4px; color: #aaa; border: 1px solid #444; cursor: pointer; }
+        .type-btn { flex: 1; padding: 12px; background: #333; text-align: center; border-radius: 4px; color: #aaa; border: 1px solid #444; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; }
+        .type-btn:hover { background: #444; }
         .type-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
+        /* SERIES INFO */
+        .series-meta { display: flex; gap: 15px; margin-bottom: 20px; }
+        .series-poster { width: 100px; height: 150px; object-fit: cover; border-radius: 4px; box-shadow: 0 4px 10px black; }
+        .series-info { flex: 1; font-size: 14px; color: #ccc; line-height: 1.4; }
+        .series-info h2 { color: white; margin: 0 0 5px 0; font-size: 20px; }
+        .season-header { font-size: 16px; font-weight: bold; color: #eee; margin: 15px 0 8px 0; background: #2a2a2a; padding: 8px; border-radius: 4px; }
+        .episode-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #181818; border-radius: 4px; cursor: pointer; transition: 0.2s; border: 1px solid #333; margin-bottom: 5px; }
+        .episode-item:hover { background: #333; border-color: #555; }
+
         /* PLAYER */
-        #player { background: black; }
+        #player { background: black; z-index: 9999; }
         #vid-con iframe, #vid-con video { width: 100%; height: 100%; border: none; }
         .player-error { text-align: center; max-width: 80%; }
         .player-error h3 { color: var(--primary); margin-bottom: 10px; }
@@ -68,19 +88,19 @@
 </head>
 <body>
 
-<!-- LOADER -->
+<!-- LOADER (Auto-hide after 5s) -->
 <div id="app-loader">
     <div class="spinner"></div>
     <div style="color:#888; font-size:12px;">Loading Cinema...</div>
-    <button onclick="document.getElementById('app-loader').style.display='none'" style="margin-top:20px; background:#333; width:auto; padding: 8px 15px; font-size:12px;">Tap if stuck</button>
+    <div style="margin-top:20px; font-size:11px; color:#444; cursor:pointer;" onclick="document.getElementById('app-loader').style.display='none'">Tap if stuck</div>
 </div>
 
 <!-- HEADER -->
 <header id="navbar">
     <div class="logo" onclick="window.scrollTo(0,0)">AMITFLIX</div>
     <div class="nav-icons">
-        <i class="fas fa-plus-circle" onclick="openModal('add-modal')"></i>
-        <i class="fas fa-cog" onclick="openModal('settings-modal')"></i>
+        <i class="fas fa-plus-circle" onclick="openModal('add-modal')" title="Add Movie"></i>
+        <i class="fas fa-cog" onclick="openModal('settings-modal')" title="Settings"></i>
     </div>
 </header>
 
@@ -89,8 +109,8 @@
     <div class="hero-overlay"></div>
     <div class="hero-content">
         <h1 id="hero-title" class="hero-title">Welcome</h1>
-        <p id="hero-desc" class="hero-desc">Your library is ready.</p>
-        <button onclick="playHero()" id="hero-play" style="width:auto; padding: 10px 30px; background: white; color: black; display:none; margin-top:15px;"><i class="fas fa-play"></i> Play</button>
+        <p id="hero-desc" class="hero-desc">Your personal library is ready.</p>
+        <button onclick="playHero()" id="hero-play" class="btn-play"><i class="fas fa-play"></i> Play</button>
     </div>
 </div>
 
@@ -101,24 +121,27 @@
 </div>
 
 <!-- ADD MODAL -->
-<div id="add-modal" class="modal">
+<div id="add-modal" class="modal-overlay">
     <div class="modal-box">
-        <h3 style="margin-top:0; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:15px;">Add Content</h3>
+        <div class="modal-close" onclick="closeModal('add-modal')">&times;</div>
+        <div class="modal-title">Add Content</div>
+        
         <div class="type-toggle">
-            <div class="type-btn active" id="btn-movie" onclick="setType('movie')">Movie (OMDb)</div>
-            <div class="type-btn" id="btn-series" onclick="setType('series')">TV Series (TMDb)</div>
+            <div class="type-btn active" id="btn-movie" onclick="setType('movie')">Movie</div>
+            <div class="type-btn" id="btn-series" onclick="setType('series')">TV Series</div>
         </div>
-        <div style="display:flex; gap:5px;">
+        
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
             <input id="search-q" placeholder="Enter Title...">
-            <button onclick="searchContent()" style="width:auto">Find</button>
+            <button class="action-btn" onclick="searchContent()" style="width:auto">Find</button>
         </div>
         <div id="search-res" style="display:flex; gap:10px; overflow-x:auto; padding-bottom:10px; margin:10px 0;"></div>
         
         <div id="step-2" style="display:none; border-top:1px solid #333; padding-top:15px;">
             <div style="font-size:13px; color:#aaa; margin-bottom:10px;">Selected: <b id="sel-title" style="color:white"></b></div>
             
-            <div id="link-box">
-                <div class="type-toggle">
+            <div id="movie-options">
+                <div class="type-toggle" style="margin-bottom:10px;">
                     <div class="type-btn active" id="tab-link" onclick="switchInput('link')">Link</div>
                     <div class="type-btn" id="tab-file" onclick="switchInput('file')">Upload</div>
                 </div>
@@ -131,51 +154,51 @@
                 </div>
             </div>
 
-            <div id="series-msg" style="display:none; font-size:13px; color:#888; margin-bottom:15px; background:#222; padding:10px; border-radius:4px;">
-                <i class="fas fa-folder"></i> This creates a <b>Series Folder</b>. You can add episodes inside it.
+            <div id="series-msg" style="display:none; font-size:13px; color:#ccc; margin-bottom:15px; background:#333; padding:10px; border-radius:4px;">
+                <i class="fas fa-folder"></i> This creates a <b>Series Folder</b>. You can add episodes inside it after creating.
             </div>
             
-            <button onclick="saveToDB()">Add to Library</button>
+            <button class="action-btn" onclick="saveToDB()">Add to Library</button>
         </div>
-        <button onclick="closeModal('add-modal')" style="background:transparent; color:#888; margin-top:10px;">Close</button>
     </div>
 </div>
 
 <!-- SERIES MODAL -->
-<div id="series-modal" class="modal">
-    <div class="modal-box" style="max-width:550px;">
-        <h3 style="border-bottom:1px solid #333; padding-bottom:10px;">Series Details</h3>
-        <div id="series-info" style="display:flex; gap:15px; margin-bottom:15px;"></div>
+<div id="series-modal" class="modal-overlay">
+    <div class="modal-box" style="max-width:600px;">
+        <div class="modal-close" onclick="closeModal('series-modal')">&times;</div>
+        <div class="modal-title">Series Details</div>
         
-        <div style="background:#2a2a2a; padding:15px; border-radius:6px; margin-bottom:15px;">
-            <div style="color:var(--primary); font-size:12px; font-weight:bold; margin-bottom:5px;">ADD EPISODE</div>
-            <div style="display:flex; gap:5px;">
-                <select id="s-season" onchange="loadEps()" style="flex:1"></select>
-                <select id="s-ep" style="flex:2"><option>Ep...</option></select>
+        <div id="series-meta" class="series-meta"></div>
+        
+        <div style="background:#2a2a2a; padding:15px; border-radius:6px; margin-bottom:20px; border:1px solid #444;">
+            <div style="color:var(--primary); font-size:12px; font-weight:bold; margin-bottom:10px;">ADD NEW EPISODE</div>
+            <div style="display:flex; gap:10px;">
+                <select id="s-season" onchange="fetchTMDbEpisodes()" style="flex:1"></select>
+                <select id="s-ep" style="flex:2"><option>Select Ep...</option></select>
             </div>
-            <div style="display:flex; gap:5px;">
-                <input id="s-link" placeholder="Episode Link" style="flex:3">
-                <button onclick="saveEp()" style="flex:1">Add</button>
+            <div style="display:flex; gap:10px;">
+                <input id="s-link" placeholder="Paste Episode Link" style="flex:3">
+                <button class="action-btn" onclick="saveEp()" style="flex:1; padding:10px;">Add</button>
             </div>
         </div>
 
         <div id="ep-list" style="max-height:250px; overflow-y:auto; display:flex; flex-direction:column; gap:5px;"></div>
-        <button onclick="closeModal('series-modal')" style="background:transparent; color:#888; margin-top:10px;">Close</button>
     </div>
 </div>
 
 <!-- SETTINGS MODAL -->
-<div id="settings-modal" class="modal">
+<div id="settings-modal" class="modal-overlay">
     <div class="modal-box" style="text-align:center;">
-        <h3>Settings</h3>
-        <input id="api-omdb" placeholder="OMDb Key">
-        <button onclick="saveSettings()">Save</button>
-        <button onclick="closeModal('settings-modal')" style="background:transparent; color:#888; margin-top:10px;">Close</button>
+        <div class="modal-close" onclick="closeModal('settings-modal')">&times;</div>
+        <div class="modal-title">Settings</div>
+        <input id="api-omdb" placeholder="OMDb API Key">
+        <button class="action-btn" onclick="saveSettings()">Save Changes</button>
     </div>
 </div>
 
 <!-- VIDEO OVERLAY -->
-<div id="player" class="modal" style="background:black; z-index:9999;">
+<div id="player" class="modal-overlay" style="background:black; z-index:9999;">
     <div style="width:100%; height:100%; position:relative;">
         <i class="fas fa-times" onclick="closePlayer()" style="position:absolute; top:20px; right:20px; color:white; background:var(--primary); width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; z-index:9999; cursor:pointer; box-shadow:0 0 10px black;"></i>
         <div id="vid-con" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;"></div>
@@ -183,8 +206,15 @@
 </div>
 
 <script>
-    // --- CACHE CLEANER (Safety) ---
-    if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(r => r.forEach(reg => reg.unregister()));
+    // --- 1. ANTI-FREEZE TIMER ---
+    // Automatically hide loader after 5 seconds to prevent getting stuck
+    setTimeout(() => {
+        const loader = document.getElementById("app-loader");
+        if(loader && loader.style.display !== 'none') {
+            console.log("Auto-hiding loader due to timeout.");
+            loader.style.display = 'none';
+        }
+    }, 5000);
 
     // --- VARS ---
     const DEFAULT_OMDB = "trilogy";
@@ -195,7 +225,7 @@
     let inputMode = 'link';
     let tempItem = null;
 
-    // --- FIREBASE ---
+    // --- FIREBASE INIT ---
     const firebaseConfig = {
       apiKey: "AIzaSyBDZyw3vWpTuo3wKBFCtqqlbQfx1jHHqmc",
       authDomain: "movietheater-free.firebaseapp.com",
@@ -211,7 +241,7 @@
         storage = firebase.storage();
         moviesCol = db.collection("movies");
         loadLib();
-    } catch(e) { alert("Startup Error: " + e.message); }
+    } catch(e) { alert("Startup Error: " + e.message); document.getElementById("app-loader").style.display='none'; }
 
     // --- CORE ---
     function loadLib() {
@@ -222,7 +252,7 @@
             allMovies = [];
 
             if(snap.empty) { 
-                list.innerHTML = "<div style='color:#666; text-align:center; padding:20px; width:100%'>Library Empty</div>"; 
+                list.innerHTML = "<div style='color:#666; text-align:center; padding:20px; width:100%'>Library Empty. Click + to add.</div>"; 
                 return; 
             }
 
@@ -232,18 +262,21 @@
                 allMovies.push(m);
                 
                 const d = document.createElement("div");
-                d.className = "poster-card";
+                d.className = "poster-container";
                 const badge = m.type === 'series' ? 'SERIES' : 'MOVIE';
                 const action = m.type === 'series' ? `viewSeries('${m.id}', '${m.tmdbID}')` : `play('${m.link}')`;
                 
                 d.innerHTML = `
                     <div class="poster-badge">${badge}</div>
                     <img src="${m.poster}" class="poster" onclick="${action}">
-                    <div style="font-size:11px; color:#ccc; margin-top:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:130px;">${m.title}</div>
+                    <div class="delete-icon" onclick="deleteMovie('${m.id}')"><i class="fas fa-trash"></i></div>
                 `;
                 list.appendChild(d);
             });
             setupHero();
+        }).catch(e => {
+            console.error(e);
+            document.getElementById("app-loader").style.display = 'none'; // Ensure loader hides on error
         });
     }
 
@@ -256,7 +289,7 @@
             document.getElementById("hero-desc").innerText = r.overview ? r.overview.substring(0, 100) + "..." : "";
             if(r.type === 'movie' && r.link) {
                 const b = document.getElementById("hero-play");
-                b.style.display = 'block';
+                b.style.display = 'inline-block';
                 b.onclick = () => play(r.link);
             }
         }
@@ -322,60 +355,4 @@
                     backdrop: `https://image.tmdb.org/t/p/original${d.backdrop_path}`, 
                     overview: d.overview, tmdbID: d.id, totalSeasons: d.number_of_seasons, type: 'series' 
                 };
-            }
-            document.getElementById("sel-title").innerText = tempItem.title;
-            document.getElementById("step-2").style.display = "block";
             
-            if(searchType === 'series') {
-                document.getElementById("link-box").style.display = 'none';
-                document.getElementById("series-msg").style.display = 'block';
-            } else {
-                document.getElementById("link-box").style.display = 'block';
-                document.getElementById("series-msg").style.display = 'none';
-            }
-        } catch(e) { alert("Details Error"); }
-    }
-
-    // --- SAVE ---
-    window.switchInput = (mode) => {
-        inputMode = mode;
-        document.getElementById("tab-link").classList.toggle("active", mode === 'link');
-        document.getElementById("tab-file").classList.toggle("active", mode === 'file');
-        document.getElementById("input-link").style.display = mode === 'link' ? 'block' : 'none';
-        document.getElementById("input-file").style.display = mode === 'file' ? 'block' : 'none';
-    }
-
-    window.saveToDB = () => {
-        if(searchType === 'movie') {
-            if(inputMode === 'link') {
-                const link = document.getElementById("vid-link").value;
-                if(!link) return alert("Paste link");
-                finalize(link);
-            } else {
-                const file = document.getElementById("vid-file").files[0];
-                if(!file) return alert("Select file");
-                const ref = storage.ref(`movies/${Date.now()}_${file.name}`);
-                const task = ref.put(file);
-                task.on('state_changed', 
-                    (s) => { document.getElementById("upload-bar").style.width = ((s.bytesTransferred/s.totalBytes)*100) + "%"; },
-                    (e) => alert("Upload error"),
-                    () => task.snapshot.ref.getDownloadURL().then(url => finalize(url))
-                );
-            }
-        } else { finalize(""); }
-    }
-
-    function finalize(link) {
-        tempItem.link = link;
-        tempItem.createdAt = Date.now();
-        moviesCol.add(tempItem).then(() => {
-            closeModal("add-modal");
-            document.getElementById("vid-link").value = "";
-            document.getElementById("step-2").style.display = "none";
-            loadLib();
-        });
-    }
-
-    // --- SERIES ---
-    window.viewSeries = async (id, tmdb) => {
-        activeSeries
