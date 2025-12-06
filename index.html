@@ -5,184 +5,96 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Amitflix</title>
     
-    <!-- PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#000000">
-    
-    <!-- FONTS & ICONS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     
-    <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
     <style>
-        :root { --primary: #E50914; --bg: #050505; --card: #141414; --text: #fff; --glass: rgba(20, 20, 20, 0.9); }
+        :root { --primary: #E50914; --bg: #050505; --card: #141414; --text: #fff; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
-        body { 
-            background-color: var(--bg); color: var(--text); 
-            font-family: 'Inter', sans-serif; margin: 0; padding: 0; 
-            overflow-x: hidden; -webkit-tap-highlight-color: transparent; 
-        }
-        
-        /* --- SCROLLBAR --- */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: var(--bg); }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
 
-        /* --- LOADER --- */
-        #app-loader { 
-            position: fixed; top:0; left:0; width:100%; height:100%; 
-            background: #000; z-index: 9999; 
-            display:flex; align-items:center; justify-content:center; flex-direction: column; 
-        }
-        .spinner { 
-            width: 50px; height: 50px; border: 3px solid rgba(255,255,255,0.1); 
-            border-top: 3px solid var(--primary); border-radius: 50%; 
-            animation: spin 0.8s linear infinite; margin-bottom: 20px;
-        }
+        #app-loader { position: fixed; top:0; left:0; width:100%; height:100%; background: #000; z-index: 9999; display:flex; align-items:center; justify-content:center; flex-direction: column; }
+        .spinner { width: 50px; height: 50px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 20px;}
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* --- NAVBAR --- */
-        header { 
-            position: fixed; top: 0; width: 100%; height: 70px; z-index: 2000; 
-            background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, transparent 100%);
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 0 5%; box-sizing: border-box; transition: 0.3s ease;
-        }
+        header { position: fixed; top: 0; width: 100%; height: 70px; z-index: 2000; background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, transparent 100%); display: flex; justify-content: space-between; align-items: center; padding: 0 5%; box-sizing: border-box; transition: 0.3s ease; }
         header.scrolled { background-color: rgba(0,0,0,0.95); backdrop-filter: blur(10px); }
-        .logo { 
-            color: var(--primary); font-weight: 900; font-size: 26px; 
-            letter-spacing: 1px; cursor: pointer; text-shadow: 0 2px 10px rgba(229, 9, 20, 0.3); 
-        }
+        .logo { color: var(--primary); font-weight: 900; font-size: 26px; letter-spacing: 1px; cursor: pointer; text-shadow: 0 2px 10px rgba(229, 9, 20, 0.3); }
         .nav-icons { display: flex; gap: 20px; }
-        .nav-icons i { font-size: 20px; cursor: pointer; color: #ddd; transition: 0.2s; }
-        .nav-icons i:hover { color: var(--primary); transform: scale(1.1); }
+        .nav-icons i { font-size: 20px; cursor: pointer; color: #ddd; }
 
-        /* --- HERO --- */
-        .hero { 
-            height: 75vh; width: 100%; position: relative; 
-            background-size: cover; background-position: center; 
-            display: flex; align-items: flex-end;
-            /* Default fallback image if library empty */
-            background-image: url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2500&auto=format&fit=crop');
-        }
-        .hero::after { 
-            content:''; position: absolute; inset:0; 
-            background: linear-gradient(to top, var(--bg) 5%, transparent 60%), 
-                        linear-gradient(to bottom, rgba(0,0,0,0.6), transparent 30%); 
-        }
-        .hero-content { 
-            position: relative; z-index: 10; padding: 0 5% 80px 5%; width: 100%; 
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-        }
-        .hero-tag { 
-            font-size: 12px; letter-spacing: 2px; font-weight: 800; 
-            text-transform: uppercase; color: #aaa; margin-bottom: 10px; display: block;
-        }
-        .hero-title { 
-            font-size: clamp(35px, 6vw, 70px); font-weight: 900; margin: 0; 
-            line-height: 1; margin-bottom: 15px;
-        }
-        .hero-desc { 
-            font-size: 16px; color: #ccc; max-width: 600px; 
-            line-height: 1.5; margin-bottom: 25px; 
-            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
-        }
-        .btn-play { 
-            padding: 12px 35px; background: white; color: black; border: none; 
-            font-weight: 800; border-radius: 4px; cursor: pointer; font-size: 16px; 
-            transition: 0.2s; display: inline-flex; align-items: center; gap: 10px;
-        }
-        .btn-play:hover { transform: scale(1.05); background: #eee; }
+        .hero { height: 75vh; width: 100%; position: relative; background-size: cover; background-position: center; display: flex; align-items: flex-end; background-image: url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2500&auto=format&fit=crop'); }
+        .hero::after { content:''; position: absolute; inset:0; background: linear-gradient(to top, var(--bg) 5%, transparent 60%), linear-gradient(to bottom, rgba(0,0,0,0.6), transparent 30%); }
+        .hero-content { position: relative; z-index: 10; padding: 0 5% 80px 5%; width: 100%; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+        .hero-tag { font-size: 12px; letter-spacing: 2px; font-weight: 800; text-transform: uppercase; color: #aaa; margin-bottom: 10px; display: block; }
+        .hero-title { font-size: clamp(35px, 6vw, 70px); font-weight: 900; margin: 0; line-height: 1; margin-bottom: 15px; }
+        .hero-desc { font-size: 16px; color: #ccc; max-width: 600px; line-height: 1.5; margin-bottom: 25px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .btn-play { padding: 12px 35px; background: white; color: black; border: none; font-weight: 800; border-radius: 4px; cursor: pointer; font-size: 16px; display: inline-flex; align-items: center; gap: 10px; }
 
-        /* --- ROWS --- */
         .row { padding: 20px 5%; position: relative; z-index: 20; margin-top: -40px; }
-        .row-title { font-size: 18px; font-weight: 600; margin-bottom: 15px; color: #e5e5e5; }
+        .row-title { font-size: 18px; font-weight: 600; margin-bottom: 15px; color: #e5e5e5; display:flex; justify-content:space-between; }
         
-        .posters { 
-            display: flex; gap: 12px; overflow-x: auto; padding-bottom: 20px; 
-            scroll-behavior: smooth;
-        }
+        .posters { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 20px; scroll-behavior: smooth; }
         .poster-card { position: relative; flex-shrink: 0; transition: 0.3s; cursor: pointer; }
-        .poster-card:hover { transform: scale(1.05); z-index: 50; }
-        .poster { 
-            width: 130px; height: 195px; object-fit: cover; border-radius: 6px; 
-            background: #222; box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
-        }
-        .poster-badge {
-            position: absolute; top: 6px; left: 6px; background: rgba(0,0,0,0.85); 
-            color: var(--primary); font-size: 9px; padding: 3px 6px; 
-            border-radius: 3px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
-        }
+        .poster { width: 130px; height: 195px; object-fit: cover; border-radius: 6px; background: #222; }
+        .poster-badge { position: absolute; top: 6px; left: 6px; background: rgba(0,0,0,0.85); color: var(--primary); font-size: 9px; padding: 3px 6px; border-radius: 3px; font-weight: 800; text-transform: uppercase; }
         
-        /* --- EMPTY STATE --- */
-        #empty-state {
-            display: none; text-align: center; padding: 50px 20px; color: #666;
+        /* DELETE BUTTON FIX */
+        .delete-icon { 
+            position: absolute; top: 0; right: 0; 
+            background: rgba(220, 0, 0, 0.9); width: 30px; height: 30px; 
+            border-radius: 0 6px 0 6px; /* Corner style */
+            display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; color: white; font-size: 14px; z-index: 20;
+            box-shadow: -2px 2px 5px rgba(0,0,0,0.5);
         }
+
+        #empty-state { display: none; text-align: center; padding: 50px 20px; color: #666; }
         #empty-state i { font-size: 40px; margin-bottom: 15px; opacity: 0.5; }
 
-        /* --- MODALS --- */
-        .modal { 
-            display: none; position: fixed; inset: 0; 
-            background: rgba(0,0,0,0.85); z-index: 5000; 
-            align-items: center; justify-content: center; backdrop-filter: blur(8px);
-        }
-        .modal-box { 
-            background: #181818; padding: 25px; border-radius: 12px; 
-            width: 90%; max-width: 450px; border: 1px solid #333; 
-            max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-            animation: slideUp 0.3s ease;
-        }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 5000; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+        .modal-box { background: #181818; padding: 25px; border-radius: 12px; width: 90%; max-width: 450px; border: 1px solid #333; max-height: 85vh; overflow-y: auto; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
         .modal-title { font-size: 20px; font-weight: 700; }
         .modal-close { font-size: 24px; color: #888; cursor: pointer; }
         
-        input, select { 
-            width: 100%; padding: 14px; background: #0a0a0a; border: 1px solid #333; 
-            color: white; margin-bottom: 12px; border-radius: 6px; 
-            box-sizing: border-box; font-size: 15px; font-family: inherit;
-        }
-        input:focus { border-color: var(--primary); outline: none; }
-        
-        .btn-main { 
-            width: 100%; padding: 14px; background: var(--primary); color: white; 
-            border: none; font-weight: 700; border-radius: 6px; cursor: pointer; 
-            font-size: 15px; transition: 0.2s; 
-        }
-        .btn-main:active { transform: scale(0.98); }
-
+        input, select { width: 100%; padding: 14px; background: #0a0a0a; border: 1px solid #333; color: white; margin-bottom: 12px; border-radius: 6px; box-sizing: border-box; font-size: 15px; font-family: inherit; }
+        .btn-main { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; font-weight: 700; border-radius: 6px; cursor: pointer; font-size: 15px; }
         .type-toggle { display: flex; background: #0a0a0a; padding: 4px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #333; }
-        .type-btn { flex: 1; padding: 10px; text-align: center; border-radius: 6px; color: #888; cursor: pointer; font-size: 13px; font-weight: 600; transition: 0.2s; }
+        .type-btn { flex: 1; padding: 10px; text-align: center; border-radius: 6px; color: #888; cursor: pointer; font-size: 13px; font-weight: 600; }
         .type-btn.active { background: #222; color: white; }
 
-        /* --- SERIES VIEW --- */
         .series-header { display: flex; gap: 15px; margin-bottom: 20px; }
         .series-poster-img { width: 90px; height: 135px; border-radius: 6px; object-fit: cover; }
-        .episode-card { 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 12px; background: #222; border-radius: 6px; 
-            margin-bottom: 8px; cursor: pointer; border: 1px solid #333;
-        }
-        .episode-card:hover { border-color: #555; background: #2a2a2a; }
+        .episode-card { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #222; border-radius: 6px; margin-bottom: 8px; cursor: pointer; border: 1px solid #333; }
+        
+        /* EPISODE DELETE BTN */
+        .ep-delete { padding: 10px; color: #666; font-size: 16px; }
+        .ep-delete:hover { color: red; }
 
-        /* --- PLAYER --- */
         #player { background: black; z-index: 9999; }
         #vid-con { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
         iframe, video { width: 100%; height: 100%; border: none; }
+        .player-error { text-align:center; padding:20px; color:#aaa; }
+        .player-error button { margin-top:10px; background:#333; padding:8px 15px; border:none; color:white; border-radius:4px; }
     </style>
 </head>
 <body>
 
-<!-- LOADER -->
 <div id="app-loader">
     <div class="spinner"></div>
     <div style="color:#666; font-size:12px; letter-spacing:1px; text-transform:uppercase;">Loading Cinema</div>
+    <div style="margin-top:20px; font-size:11px; color:#444; cursor:pointer;" onclick="document.getElementById('app-loader').style.display='none'">Tap if stuck</div>
 </div>
 
 <header id="navbar">
@@ -193,7 +105,6 @@
     </div>
 </header>
 
-<!-- HERO SECTION -->
 <div class="hero" id="hero">
     <div class="hero::after"></div>
     <div class="hero-content">
@@ -204,12 +115,13 @@
     </div>
 </div>
 
-<!-- LIBRARY SECTION -->
 <div class="row">
-    <div class="row-title">My Collection</div>
+    <div class="row-title">
+        <span>My Collection</span>
+        <i class="fas fa-sync-alt" onclick="loadLib()" style="font-size:14px; cursor:pointer; color:#666;" title="Refresh"></i>
+    </div>
     <div class="posters" id="my-list"></div>
     
-    <!-- EMPTY STATE -->
     <div id="empty-state">
         <i class="fas fa-film"></i>
         <div>No movies added yet.</div>
@@ -273,7 +185,7 @@
                 <select id="s-ep" style="flex:2"><option>Ep...</option></select>
             </div>
             <div style="display:flex; gap:10px;">
-                <input id="s-link" placeholder="Link" style="flex:3; margin-bottom:0;">
+                <input id="s-link" placeholder="Link (Your strange-things link goes here)" style="flex:3; margin-bottom:0;">
                 <button class="btn-main" onclick="saveEp()" style="flex:1; padding:0;">Add</button>
             </div>
         </div>
@@ -356,7 +268,9 @@
                 d.innerHTML = `
                     <div class="poster-badge">${badge}</div>
                     <img src="${m.poster}" class="poster" onclick="${action}">
-                    <i class="fas fa-trash delete-icon" onclick="deleteMovie('${m.id}')"></i>
+                    <div class="delete-icon" onclick="deleteMovie('${m.id}', event)">
+                        <i class="fas fa-trash"></i>
+                    </div>
                 `;
                 list.appendChild(d);
             });
@@ -426,7 +340,6 @@
         });
     }
 
-    
     window.selectItem = async (m, source) => {
         try {
             if(source === 'omdb') {
@@ -443,7 +356,7 @@
                     overview: d.overview, tmdbID: d.id, totalSeasons: d.number_of_seasons, type: 'series' 
                 };
             }
-            document.getElementById("sel-title").innerText = tempItem.title;
+   document.getElementById("sel-title").innerText = tempItem.title;
             document.getElementById("step-2").style.display = "block";
             
             if(searchType === 'series') {
@@ -492,10 +405,10 @@
         const d = doc.data();
         document.getElementById("series-header").innerHTML = `
             <img src="${d.poster}" class="series-poster-img">
-            <div class="series-info">
-                <h2>${d.title}</h2>
-                <div style="color:#aaa;">${d.totalSeasons} Seasons</div>
-                <p style="font-size:13px; margin-top:5px;">${d.overview.substring(0,100)}...</p>
+            <div class="series-info" style="color:#ccc;">
+                <h2 style="color:white; margin:0 0 5px 0;">${d.title}</h2>
+                <div style="margin-bottom:10px;">${d.totalSeasons} Seasons</div>
+                <p style="font-size:13px; line-height:1.4;">${d.overview.substring(0,120)}...</p>
             </div>
         `;
         
@@ -526,6 +439,7 @@
         const link = document.getElementById("s-link").value;
         if(!link || val.includes("Select")) return alert("Fill all fields");
         const [num, title] = val.split("|");
+        
         moviesCol.doc(activeSeriesID).collection("episodes").add({
             season: parseInt(s), episode: parseInt(num), title: title, link: link, createdAt: Date.now()
         }).then(() => {
@@ -537,15 +451,20 @@
     function loadDbEps() {
         const div = document.getElementById("ep-list");
         div.innerHTML = "Loading...";
-        moviesCol.doc(activeSeriesID).collection("episodes").orderBy("season").orderBy("episode").get().then(snap => {
+        moviesCol.doc(activeSeriesID).collection("episodes").get().then(snap => {
             div.innerHTML = "";
-            if(snap.empty) div.innerHTML = "<div style='color:#666; text-align:center;'>No episodes.</div>";
-            snap.forEach(d => {
-                const e = d.data();
+            if(snap.empty) { div.innerHTML = "<div style='color:#666; text-align:center;'>No episodes.</div>"; return; }
+            
+            // Client-side sort
+            let episodes = [];
+            snap.forEach(d => episodes.push({id: d.id, ...d.data()}));
+            episodes.sort((a,b) => (a.season - b.season) || (a.episode - b.episode));
+
+            episodes.forEach(e => {
                 div.innerHTML += `
-                    <div class="episode-card" onclick="play('${e.link}')">
-                        <div><b>S${e.season} E${e.episode}:</b> ${e.title}</div>
-                        <i class="fas fa-play" style="font-size:12px; color:var(--primary);"></i>
+                    <div class="episode-card">
+                        <div onclick="play('${e.link}')" style="flex:1;"><b>S${e.season} E${e.episode}:</b> ${e.title}</div>
+                        <i class="fas fa-trash ep-delete" onclick="delEp('${e.id}')"></i>
                     </div>`;
             });
         });
@@ -559,12 +478,13 @@
         
         if(url.includes("youtu")) {
             let vid = url.split("v=")[1] || url.split("/").pop(); vid=vid.split("&")[0];
-            con.innerHTML = `<iframe src="https://www.youtube.com/embed/${vid}?autoplay=1" allowfullscreen></iframe>`;
+            con.innerHTML = `<iframe src="https://www.youtube.com/embed/${vid}?autoplay=1" allowfullscreen style="width:100%; height:100%"></iframe>`;
         } else if(url.includes("drive.google")) {
-            con.innerHTML = `<iframe src="${url.replace("/view", "/preview")}" allowfullscreen></iframe>`;
+            con.innerHTML = `<iframe src="${url.replace("/view", "/preview")}" allowfullscreen style="width:100%; height:100%"></iframe>`;
         } else {
             const v = document.createElement("video");
             v.controls = true; v.autoplay = true; v.style="width:100%; height:100%";
+            v.onerror = () => { con.innerHTML = `<div class="player-error"><h3>Playback Failed</h3><p>Link blocked or invalid.</p><button onclick="window.open('${url}', '_blank')">Open in Browser</button></div>`; };
             if(url.includes(".m3u8") && Hls.isSupported()) { const h = new Hls(); h.loadSource(url); h.attachMedia(v); } else { v.src = url; }
             con.appendChild(v);
         }
@@ -574,11 +494,17 @@
     window.openModal = (id) => document.getElementById(id).style.display = "flex";
     window.closeModal = (id) => document.getElementById(id).style.display = "none";
     window.saveSettings = () => { localStorage.setItem("omdb_key", document.getElementById("api-omdb").value); location.reload(); }
-    window.deleteMovie = (id) => { if(confirm("Delete?")) moviesCol.doc(id).delete().then(loadLib); }
+    
+    // SAFE DELETE with StopPropagation
+    window.deleteMovie = (id, event) => { 
+        if(event) event.stopPropagation();
+        if(confirm("Delete?")) moviesCol.doc(id).delete().then(loadLib); 
+    }
+    window.delEp = (id) => { 
+        if(confirm("Delete Episode?")) moviesCol.doc(activeSeriesID).collection("episodes").doc(id).delete().then(loadDbEps); 
+    }
+    
     window.addEventListener("scroll", () => document.getElementById("navbar").classList.toggle("scrolled", window.scrollY > 50));
 </script>
 </body>
 </html>
-
-
-                               
