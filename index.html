@@ -5,70 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Amitflix</title>
     
-    <!-- PWA Settings -->
+    <!-- PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#141414">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
-    <!-- SCRIPTS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <!-- FIREBASE COMPAT (Stable) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
     <style>
         :root { --primary: #e50914; --bg: #141414; --card: #1f1f1f; --text: #fff; }
-        body { background-color: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
+        body { background-color: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
-        /* DEBUG CONSOLE */
-        #debug-console { 
-            display: none; background: #330000; color: #ff9999; padding: 10px; font-family: monospace; font-size: 12px; border-bottom: 1px solid red; 
-        }
-
         /* NAVBAR */
-        header { position: fixed; top: 0; width: 100%; height: 60px; z-index: 2000; background: linear-gradient(to bottom, rgba(0,0,0,0.9), rgba(0,0,0,0)); display: flex; justify-content: space-between; align-items: center; padding: 0 4%; box-sizing: border-box; }
-        .logo { color: var(--primary); font-size: 24px; font-weight: 900; letter-spacing: 1px; }
+        header { position: fixed; top: 0; width: 100%; height: 60px; z-index: 2000; background: linear-gradient(to bottom, rgba(0,0,0,0.9), rgba(0,0,0,0)); display: flex; justify-content: space-between; align-items: center; padding: 0 4%; box-sizing: border-box; transition: 0.3s; }
+        header.scrolled { background-color: #141414; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .logo { color: var(--primary); font-size: 24px; font-weight: 900; letter-spacing: 1px; cursor: pointer; text-shadow: 0 0 10px black; }
         .nav-right { display: flex; gap: 20px; }
-        .icon-btn { font-size: 22px; color: white; cursor: pointer; }
+        .icon-btn { font-size: 22px; color: white; padding: 10px; cursor: pointer; }
 
         /* HERO */
         .hero { height: 70vh; width: 100%; position: relative; background-size: cover; background-position: center; display: flex; align-items: center; background-image: url('https://images.unsplash.com/photo-1574267432553-4b4628081c31?q=80&w=1931&auto=format&fit=crop'); }
         .hero-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.2), #141414); }
         .hero-content { z-index: 10; padding-left: 4%; max-width: 600px; padding-top: 50px; }
-        .hero-title { font-size: clamp(30px, 5vw, 60px); font-weight: 800; margin-bottom: 10px; line-height: 1.1; }
-        .hero-desc { font-size: 16px; margin-bottom: 20px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .hero-title { font-size: clamp(30px, 5vw, 60px); font-weight: 800; margin-bottom: 10px; line-height: 1.1; text-shadow: 2px 2px 4px black; }
+        .hero-desc { font-size: 16px; margin-bottom: 20px; text-shadow: 1px 1px 2px black; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         .btn-play { padding: 10px 24px; border-radius: 4px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; background: white; color: black; display: none; }
 
         /* MODALS */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 3000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal-box { background: #1f1f1f; width: 90%; max-width: 500px; max-height: 85vh; padding: 25px; border-radius: 8px; border: 1px solid #333; position: relative; overflow-y: auto; }
+        .modal-box { background: #1f1f1f; width: 90%; max-width: 500px; max-height: 85vh; padding: 25px; border-radius: 8px; border: 1px solid #333; position: relative; overflow-y: auto; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
         .modal-close { position: absolute; top: 15px; right: 15px; font-size: 20px; cursor: pointer; color: #888; }
-        .modal-title { font-size: 22px; font-weight: bold; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .modal-title { font-size: 22px; font-weight: bold; margin-bottom: 20px; color: white; border-bottom: 1px solid #333; padding-bottom: 10px; }
 
-        /* FORM */
-        input, select { width: 100%; padding: 12px; background: #000; border: 1px solid #444; color: white; margin-bottom: 10px; border-radius: 4px; box-sizing: border-box; }
-        .action-btn { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        /* INPUTS & BUTTONS */
+        input, select { width: 100%; padding: 12px; background: #000; border: 1px solid #444; color: white; margin-bottom: 10px; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        .action-btn { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s; }
+        .action-btn:hover { background: #b20710; }
         
         .type-toggle { display: flex; gap: 10px; margin-bottom: 15px; }
-        .type-btn { flex: 1; padding: 10px; background: #333; text-align: center; border-radius: 4px; cursor: pointer; color: #aaa; border: 1px solid #444; }
+        .type-btn { flex: 1; padding: 10px; background: #333; text-align: center; border-radius: 4px; cursor: pointer; color: #aaa; border: 1px solid #444; font-size: 14px; }
         .type-btn.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: bold; }
 
-        /* LIBRARY */
+        /* LIBRARY GRID */
         .row { padding: 20px 4%; }
         .row-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; border-left: 4px solid var(--primary); padding-left: 10px; }
-        .row-posters { display: flex; overflow-x: auto; padding-bottom: 20px; gap: 12px; }
-        .poster-container { position: relative; flex-shrink: 0; }
+        .row-posters { display: flex; overflow-x: auto; padding-bottom: 20px; gap: 12px; scroll-behavior: smooth; }
+        .row-posters::-webkit-scrollbar { display: none; }
+        .poster-container { position: relative; flex-shrink: 0; transition: transform 0.3s; }
+        .poster-container:hover { transform: scale(1.05); z-index: 10; }
         .poster { width: 140px; height: 210px; object-fit: cover; border-radius: 6px; cursor: pointer; }
-        .poster-badge { position: absolute; top: 5px; left: 5px; background: rgba(0,0,0,0.8); color: var(--primary); font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        .poster-badge { position: absolute; top: 5px; left: 5px; background: rgba(0,0,0,0.8); color: var(--primary); font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
         .delete-icon { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.8); width: 25px; height: 25px; border-radius: 50%; display: none; align-items: center; justify-content: center; cursor: pointer; color: white; font-size: 12px; }
         .poster-container:hover .delete-icon { display: flex; }
 
-        /* SERIES META */
+        /* SERIES VIEW */
         .series-meta { display: flex; gap: 15px; margin-bottom: 20px; }
         .series-poster { width: 100px; height: 150px; object-fit: cover; border-radius: 4px; }
         .series-info { flex: 1; font-size: 14px; color: #ccc; line-height: 1.4; }
         .season-title { font-size: 16px; font-weight: bold; color: #eee; margin: 15px 0 8px 0; background: #2a2a2a; padding: 8px; border-radius: 4px; }
-        .episode-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #181818; border-radius: 4px; cursor: pointer; border: 1px solid #333; margin-bottom: 5px; }
+        .episode-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #181818; border-radius: 4px; cursor: pointer; transition: 0.2s; border: 1px solid #333; margin-bottom: 5px; }
+        .episode-item:hover { background: #333; border-color: #555; }
         .ep-title { font-size: 14px; color: white; }
         .ep-play-btn { color: var(--primary); font-size: 18px; }
 
@@ -78,7 +78,7 @@
         iframe, video { width: 100%; height: 100%; border: none; }
         #close-player { position: absolute; top: 20px; right: 20px; background: var(--primary); width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; z-index: 5001; cursor: pointer; box-shadow: 0 0 10px black; }
         
-        /* PLAYER ERROR */
+        /* ERROR MESSAGE IN PLAYER */
         .player-error { color: white; text-align: center; max-width: 80%; }
         .player-error h3 { color: var(--primary); margin-bottom: 10px; }
         .player-error p { font-size: 14px; color: #aaa; margin-bottom: 20px; }
@@ -91,12 +91,12 @@
 </head>
 <body>
 
-<div id="debug-console"></div>
-
+<!-- LOADING SCREEN -->
 <div id="app-loader">
     <div class="spinner"></div>
     <div style="color: #666; font-size: 14px;">Loading Library...</div>
-    <div style="color: #444; font-size: 11px; margin-top:20px;">Taking too long? <u onclick="forceCloseLoader()" style="cursor:pointer">Click here</u></div>
+    <!-- Manual bypass if stuck -->
+    <div style="margin-top:20px; font-size:11px; color:#444; cursor:pointer;" onclick="document.getElementById('app-loader').style.display='none'">Tap to Force Enter</div>
 </div>
 
 <header id="navbar">
@@ -141,6 +141,7 @@
         <div id="add-step-2" style="display:none; border-top:1px solid #333; padding-top:15px; margin-top:10px;">
             <div style="color:#aaa; font-size:13px; margin-bottom:10px;">Selected: <b id="selected-title" style="color:white"></b></div>
             
+            <!-- Movie Link Input -->
             <div id="movie-link-section">
                 <div class="type-toggle" style="margin-bottom:10px;">
                     <div class="type-btn active" id="tab-link" onclick="switchInput('link')">Link</div>
@@ -155,6 +156,7 @@
                 </div>
             </div>
 
+            <!-- Series Message -->
             <div id="series-msg-section" style="display:none; color:#ccc; font-size:13px; margin-bottom:15px; background:#333; padding:10px; border-radius:4px;">
                 <i class="fas fa-info-circle"></i> This will create a <b>Series Folder</b>. Add episodes inside it.
             </div>
@@ -172,6 +174,7 @@
         
         <div class="series-meta" id="series-meta"></div>
 
+        <!-- ADD EPISODE TOOL -->
         <div style="background: #2a2a2a; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #444;">
             <div style="font-weight:bold; margin-bottom:10px; font-size:14px; color:var(--primary);">+ Add New Episode</div>
             <div style="display:flex; gap:10px;">
@@ -205,33 +208,26 @@
 </div>
 
 <script>
-    // --- ERROR LOGGING ---
-    function logError(msg) {
-        console.error(msg);
-        const con = document.getElementById("debug-console");
-        con.style.display = "block";
-        con.innerText = "ERROR: " + msg;
-    }
-
     // --- CONFIG ---
     const DEFAULT_OMDB = "trilogy";
     const TMDB_KEY_DEMO = "3fd2be6f0c70a2a598f084ddfb75487c"; 
     let OMDB_KEY = localStorage.getItem("omdb_key") || DEFAULT_OMDB;
     let db, storage, moviesCol;
     
-    // Safety Timeout: Force close loader after 5 seconds if stuck
-    setTimeout(() => {
-        const loader = document.getElementById("app-loader");
-        if(loader && loader.style.display !== 'none') {
-            logError("Loading timeout. Firebase connection might be slow.");
-            // Optional: Uncomment next line to force remove loader
-            // loader.style.display = 'none'; 
-        }
-    }, 8000);
+    // State
+    let tempContent = null; 
+    let activeSeriesID = null;
+    let activeSeriesTmdbID = null;
+    let allMovies = [];
+    let heroLink = "";
+    let searchType = 'movie'; 
+    let inputMode = 'link';
 
-    window.forceCloseLoader = () => {
-        document.getElementById("app-loader").style.display = "none";
-    }
+    // Safety Timeout: Auto-hide loader if stuck for 8s
+    setTimeout(() => {
+        const l = document.getElementById("app-loader");
+        if(l && l.style.display !== 'none') l.style.display = 'none';
+    }, 8000);
 
     // FIREBASE INIT
     const firebaseConfig = {
@@ -248,13 +244,11 @@
         db = firebase.firestore();
         storage = firebase.storage();
         moviesCol = db.collection("movies");
-        
-        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(e => console.log("SW Fail", e));
-        
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
         loadLibrary();
     } catch(e) { 
-        logError("Firebase Init Failed: " + e.message);
-        document.getElementById("app-loader").style.display = "none";
+        alert("Firebase Error: " + e.message); 
+        document.getElementById("app-loader").style.display = 'none';
     }
 
     // --- LIBRARY LOGIC ---
@@ -263,7 +257,7 @@
             document.getElementById("app-loader").style.display = "none";
             const list = document.getElementById("my-list");
             list.innerHTML = "";
-            window.allMovies = [];
+            allMovies = [];
 
             if (snap.empty) {
                 list.innerHTML = `<div style="color:#666; padding:20px; width:100%; text-align:center;">Library Empty. Click + to add.</div>`;
@@ -273,7 +267,7 @@
             snap.forEach(doc => {
                 const m = doc.data();
                 m.id = doc.id;
-                window.allMovies.push(m);
+                allMovies.push(m);
                 
                 const div = document.createElement("div");
                 div.className = "poster-container";
@@ -289,14 +283,14 @@
             });
             setupHero();
         }).catch(err => {
-            logError("DB Load Failed: " + err.message);
+            console.error(err);
             document.getElementById("app-loader").style.display = "none";
         });
     }
 
     function setupHero() {
-        if(window.allMovies.length > 0) {
-            const r = window.allMovies[Math.floor(Math.random() * window.allMovies.length)];
+        if(allMovies.length > 0) {
+            const r = allMovies[Math.floor(Math.random() * allMovies.length)];
             document.getElementById("hero").style.backgroundImage = `url('${r.backdrop || r.poster}')`;
             document.getElementById("hero-title").innerText = r.title;
             document.getElementById("hero-desc").innerText = r.overview;
@@ -309,10 +303,6 @@
     }
 
     // --- ADD FLOW ---
-    let searchType = 'movie'; 
-    let inputMode = 'link';
-    let tempContent = null;
-
     window.openModal = (id) => document.getElementById(id).style.display = "flex";
     window.closeModal = (id) => document.getElementById(id).style.display = "none";
 
@@ -366,13 +356,10 @@
     }
 
     window.selectContentForAdd = async (m, source) => {
-        try {
-            if (source === 'omdb') {
-                const res = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_KEY}&i=${m.imdbID}`);
-                const full = await res.json();
-                tempContent = {
-                    title: full.Title, poster: full.Poster, backdrop: full.Poster, overview: full.Plot, type: 'movie'
-                };
-            } else {
-                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://api.themoviedb.org/3/tv/${m.id}?api_key=${TMDB_KEY_DEMO}`)}`;
-          
+        if (source === 'omdb') {
+            const res = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_KEY}&i=${m.imdbID}`);
+            const full = await res.json();
+            tempContent = {
+                title: full.Title, poster: full.Poster, backdrop: full.Poster, overview: full.Plot, type: 'movie'
+            };
+        } else 
