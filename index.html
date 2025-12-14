@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,6 +16,7 @@
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script> <!-- Auth Added -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
@@ -30,34 +32,33 @@
         body { background-color: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
         ::-webkit-scrollbar { width: 0px; background: transparent; }
 
-        /* --- NETFLIX STYLE INTRO --- */
+        /* --- ADMIN VISIBILITY LOGIC --- */
+        body:not(.is-admin) .admin-only { display: none !important; }
+        body.is-admin #login-btn { display: none !important; }
+        body:not(.is-admin) #logout-btn { display: none !important; }
+
+        /* --- INTRO --- */
         #intro-overlay {
             position: fixed; inset: 0; background: #000; z-index: 10000;
             display: flex; align-items: center; justify-content: center;
-            animation: fadeOutIntro 0.5s ease 3.5s forwards;
+            animation: fadeOutIntro 0.5s ease 3.2s forwards;
             pointer-events: none;
         }
         .intro-letter {
             font-family: 'Bebas Neue', sans-serif;
-            font-size: 15rem; /* Giant A */
-            color: var(--primary);
-            position: relative;
+            font-size: 15rem; color: var(--primary); position: relative;
             transform: scale(1);
             animation: netflixZoom 3s cubic-bezier(0.645, 0.045, 0.355, 1) forwards;
             text-shadow: 0 0 20px rgba(229, 9, 20, 0.5);
         }
-        /* Ribbon/Fold Effect */
         .intro-letter::after {
             content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(to right, transparent 45%, rgba(0,0,0,0.5) 50%, transparent 55%);
             filter: blur(4px);
         }
-
         @keyframes netflixZoom {
-            0% { transform: scale(1); opacity: 0; }
-            20% { opacity: 1; transform: scale(1); }
-            80% { opacity: 1; transform: scale(1.5); }
-            100% { transform: scale(30); opacity: 0; }
+            0% { transform: scale(1); opacity: 0; } 20% { opacity: 1; transform: scale(1); }
+            80% { opacity: 1; transform: scale(1.5); } 100% { transform: scale(30); opacity: 0; }
         }
         @keyframes fadeOutIntro { 99% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
 
@@ -75,8 +76,11 @@
         }
         header.scrolled { background: rgba(5, 5, 5, 0.9); backdrop-filter: blur(20px); }
         .logo { color: var(--primary); font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 1px; text-shadow: 0 0 20px rgba(229,9,20,0.5); cursor:pointer; }
+        
+        .nav-icons { display: flex; align-items: center; }
         .nav-btn { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); cursor: pointer; margin-left: 10px; transition: 0.2s; }
         .nav-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.2); }
+        .nav-btn i { color: white; font-size: 18px; }
 
         /* --- HERO --- */
         .hero { 
@@ -109,6 +113,13 @@
         .poster:active { transform: scale(0.95); }
         .poster-badge { position: absolute; top: 6px; left: 6px; background: rgba(0,0,0,0.8); color: var(--primary); font-size: 9px; padding: 3px 6px; border-radius: 4px; font-weight: 800; }
         
+        .delete-btn {
+            position: absolute; top: -8px; right: -8px; 
+            width: 26px; height: 26px; background: #E50914; border: 2px solid #fff; 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 12px; z-index: 50; cursor: pointer; box-shadow: 0 2px 5px black;
+        }
+
         /* --- MODALS --- */
         .modal { display: none; position: fixed; inset: 0; z-index: 5000; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; backdrop-filter: blur(10px); }
         .modal-box { background: #141414; width: 100%; max-width: 500px; padding: 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); max-height: 85vh; overflow-y: auto; }
@@ -121,7 +132,8 @@
         .series-backdrop { height: 45vh; width: 100%; background-size: cover; background-position: center; position: relative; flex-shrink: 0; mask-image: linear-gradient(to bottom, black 60%, transparent 100%); }
         .close-series { position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; background: rgba(0,0,0,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; cursor: pointer; backdrop-filter: blur(10px); }
         .series-content { padding: 0 25px 50px 25px; margin-top: -80px; position: relative; z-index: 2; }
-        .ep-card { display: flex; align-items: center; gap: 15px; padding: 15px; background: var(--surface); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 10px; }
+        .ep-card { display: flex; align-items: center; gap: 15px; padding: 15px; background: var(--surface); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 10px; position: relative; }
+        .ep-delete { position: absolute; right: 10px; top: 10px; color: #666; font-size: 14px; padding: 10px; }
 
         /* --- PLAYER --- */
         #player { background: black; z-index: 9999; display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; }
@@ -133,16 +145,20 @@
 </head>
 <body>
 
-<!-- INTRO ANIMATION -->
-<div id="intro-overlay">
-    <div class="intro-letter">A</div>
-</div>
+<div id="intro-overlay"><div class="intro-letter">A</div></div>
+<div id="app-loader"><div class="spinner"></div></div>
 
 <header id="navbar">
     <div class="logo" onclick="window.scrollTo(0,0)">AMITFLIX</div>
-    <div style="display:flex;">
-        <!-- Settings Removed - Key is hardcoded now -->
-        <div class="nav-btn" onclick="openModal('add-modal')"><i class="fas fa-plus"></i></div>
+    <div class="nav-icons">
+        
+        <!-- ADMIN CONTROLS -->
+        <div class="nav-btn admin-only" onclick="openModal('add-modal')"><i class="fas fa-plus"></i></div>
+        
+        <!-- LOGIN / LOGOUT -->
+        <div class="nav-btn" id="login-btn" onclick="openLoginModal()"><i class="fas fa-lock"></i></div>
+        <div class="nav-btn" id="logout-btn" onclick="firebaseLogout()"><i class="fas fa-lock-open" style="color:var(--primary);"></i></div>
+        
     </div>
 </header>
 
@@ -155,17 +171,16 @@
     </div>
 </div>
 
-<!-- TRENDING SECTION (Web Fetch) -->
-<div class="section" style="margin-top: -40px;">
+<!-- TRENDING (Admin Only) -->
+<div class="section admin-only" style="margin-top: -40px;">
     <div class="section-header">
         <span class="section-title">🔥 Top Sci-Fi & Superheroes</span>
         <i class="fas fa-sync-alt" onclick="window.loadWebTrending()" style="color:#666; cursor:pointer;" title="Retry"></i>
     </div>
-    <!-- Container for List or Loader -->
     <div class="h-list" id="web-trending"></div>
 </div>
 
-<!-- MY COLLECTION (Merged Grid) -->
+<!-- MY COLLECTION -->
 <div class="section">
     <div class="section-header">
         <span class="section-title">📂 My Collection</span>
@@ -173,6 +188,17 @@
     </div>
     <div class="v-grid" id="grid-list"></div>
     <div id="empty-state" style="text-align:center; padding: 40px; color:#666; display:none;">No content added.</div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div id="login-modal" class="modal">
+    <div class="modal-box" style="text-align:center; max-width:350px;">
+        <h3 style="margin-top:0;">Admin Login</h3>
+        <input type="email" id="email-input" placeholder="Email (admin@amitflix.com)">
+        <input type="password" id="password-input" placeholder="Password">
+        <button class="btn-action" onclick="firebaseLogin()">Sign In</button>
+        <div style="margin-top:15px; font-size:12px; color:#666; cursor:pointer;" onclick="closeModal('login-modal')">Cancel</div>
+    </div>
 </div>
 
 <!-- ADD MODAL -->
@@ -183,17 +209,14 @@
             <select id="add-type"><option value="movie">Movie</option><option value="series">TV Series</option></select>
         </div>
         
-        <!-- Search Section -->
         <div id="add-search-ui" style="display:flex; gap:10px;">
             <input id="search-q" placeholder="Search Title...">
             <button class="btn-action" onclick="searchContent()" style="width:auto;"><i class="fas fa-search"></i></button>
         </div>
         <div id="search-res" style="display:flex; gap:10px; overflow-x:auto; padding-bottom:10px;"></div>
         
-        <!-- Step 2 (Link Input) -->
         <div id="step-2" style="display:none; margin-top:15px;">
             <p style="color:#aaa; font-size:13px;">Adding: <b id="sel-title" style="color:white"></b></p>
-            
             <div id="movie-options">
                 <input id="vid-link" placeholder="Paste Link (MP4/Drive)">
             </div>
@@ -202,7 +225,6 @@
             <button class="btn-action" onclick="saveToDB()">Save to Library</button>
             <div style="text-align:center; margin-top:10px; font-size:12px; color:#666; cursor:pointer;" onclick="resetAddModal()">Cancel / Back</div>
         </div>
-        
         <i class="fas fa-times" onclick="closeModal('add-modal')" style="position:absolute; top:20px; right:20px; color:#888; cursor:pointer; font-size:20px;"></i>
     </div>
 </div>
@@ -213,7 +235,9 @@
     <div class="series-content">
         <h1 class="series-title" id="s-title">Title</h1>
         <p id="s-desc" style="color:#aaa; line-height:1.5; font-size:14px;">...</p>
-        <div style="background:#1a1a1a; padding:15px; border-radius:12px; margin:20px 0;">
+        
+        <!-- Add Episode (Admin Only) -->
+        <div class="admin-only" style="background:#1a1a1a; padding:15px; border-radius:12px; margin:20px 0;">
             <h4 style="margin:0 0 10px 0;">Add Episode</h4>
             <div style="display:flex; gap:10px;">
                 <select id="s-season" onchange="fetchTMDbEpisodes()"></select>
@@ -222,6 +246,7 @@
             <input id="s-link" placeholder="Link">
             <button class="btn-action" onclick="saveEp()">Add</button>
         </div>
+        
         <h3>Episodes</h3>
         <div id="ep-list" style="display:flex; flex-direction:column; gap:10px;"></div>
     </div>
@@ -238,18 +263,21 @@
     </div>
 </div>
 
-<script>
-    // INTRO SOUND
+<script type="module">
     window.addEventListener('click', () => {
-        const audio = document.createElement("audio");
-        audio.src = "https://www.soundjay.com/buttons/sounds/button-3.mp3";
-        audio.play().catch(() => {});
+        const audio = new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3");
+        audio.play().catch(()=>{});
     }, { once: true });
 
-    // *** API CONFIG ***
-    const OMDB_KEY = "496d1395"; // YOUR KEY
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+    // VARS
+    const OMDB_KEY = "496d1395"; 
     const TMDB_KEY = "3fd2be6f0c70a2a598f084ddfb75487c";
-    let db, storage, moviesCol, activeSeriesID, activeTmdbID, allMovies=[], tempItem=null;
+    let db, storage, moviesCol, auth, activeSeriesID, activeTmdbID, allMovies=[], tempItem=null;
 
     const firebaseConfig = {
       apiKey: "AIzaSyBDZyw3vWpTuo3wKBFCtqqlbQfx1jHHqmc",
@@ -261,24 +289,51 @@
     };
 
     try {
-        firebase.initializeApp(firebaseConfig);
-        db = firebase.firestore();
-        storage = firebase.storage();
-        moviesCol = db.collection("movies");
+        const app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+        storage = getStorage(app);
+        moviesCol = collection(db, "movies");
+        
+        // AUTH LISTENER (AUTO UI UPDATE)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.body.classList.add("is-admin");
+                console.log("Admin logged in:", user.email);
+            } else {
+                document.body.classList.remove("is-admin");
+                console.log("Visitor mode");
+            }
+        });
+
         loadLib();
         loadWebTrending();
-    } catch(e) { console.error(e); }
+        
+        setTimeout(() => document.getElementById("app-loader")?.remove(), 2500);
+    } catch(e) { console.error("Firebase Error:", e); }
 
-    // --- FETCH WEB TRENDING (Smart Proxy & Loader) ---
+    // --- AUTHENTICATION UI ---
+    window.openLoginModal = () => window.openModal('login-modal');
+    
+    window.firebaseLogin = async () => {
+        const email = document.getElementById("email-input").value;
+        const pass = document.getElementById("password-input").value;
+        try {
+            await signInWithEmailAndPassword(auth, email, pass);
+            window.closeModal('login-modal');
+            alert("Welcome Admin!");
+        } catch(e) { alert("Login Failed: " + e.message); }
+    }
+
+    window.adminLogout = async () => {
+        await signOut(auth);
+        alert("Logged Out");
+        location.reload();
+    }
+
+    // --- FETCH WEB TRENDING ---
     async function loadWebTrending() {
         const list = document.getElementById("web-trending");
-        
-        // SHOW SPINNER
-        list.innerHTML = `
-            <div style="width:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px;">
-                <div class="loader-ring"></div>
-            </div>`;
-        
         const targetUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_KEY}&with_genres=878,28&sort_by=popularity.desc`;
         const proxies = [
             url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
@@ -290,15 +345,11 @@
             try {
                 const res = await fetch(proxy(targetUrl));
                 if (res.ok) { data = await res.json(); break; }
-            } catch(e) { console.log("Proxy fail..."); }
+            } catch(e) {}
         }
 
         if (!data || !data.results) {
-            list.innerHTML = `
-            <div style="width:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px;">
-                <i class="fas fa-redo-alt" onclick="loadWebTrending()" style="font-size:24px; color:#E50914; cursor:pointer; background:rgba(255,255,255,0.1); padding:10px; border-radius:50%;"></i>
-                <div style="color:#666; font-size:12px; margin-top:10px;">Tap to Retry</div>
-            </div>`;
+            list.innerHTML = `<div style="text-align:center; padding:20px; color:#666; font-size:12px;">Failed to load trending.</div>`;
             return;
         }
         
@@ -308,7 +359,6 @@
             d.className = "poster-card";
             const safeTitle = m.title.replace(/'/g, "");
             const safeOverview = m.overview.replace(/'/g, "").replace(/"/g, "");
-            
             d.innerHTML = `
                 <div class="poster-badge" style="background:#E50914;">HOT</div>
                 <img src="https://image.tmdb.org/t/p/w200${m.poster_path}" class="poster" onclick="openAddFromTrending('${m.id}', '${safeTitle}', '${m.poster_path}', '${m.backdrop_path}', '${safeOverview}')">
@@ -317,7 +367,6 @@
         });
     }
 
-    // --- SMART ADD FROM TRENDING ---
     window.openAddFromTrending = (id, title, poster, backdrop, overview) => {
         tempItem = {
             title: title,
@@ -326,7 +375,6 @@
             overview: overview,
             type: 'movie'
         };
-
         document.getElementById("add-type").value = "movie";
         document.getElementById("sel-title").innerText = title;
         document.getElementById("add-search-ui").style.display = "none";
@@ -334,68 +382,66 @@
         document.getElementById("step-2").style.display = "block";
         document.getElementById("movie-options").style.display = "block";
         document.getElementById("series-msg").style.display = "none";
-        
-        openModal('add-modal');
+        window.openModal('add-modal');
     }
 
-    // --- MY COLLECTION ---
-    function loadLib() {
-        moviesCol.orderBy("createdAt", "desc").get().then((snap) => {
-            const grid = document.getElementById("grid-list");
-            const empty = document.getElementById("empty-state");
-            grid.innerHTML = ""; allMovies = [];
+    // --- LIBRARY ---
+    async function loadLib() {
+        const q = query(moviesCol, orderBy("createdAt", "desc"));
+        const snap = await getDocs(q);
+        const grid = document.getElementById("grid-list");
+        grid.innerHTML = ""; allMovies = [];
 
-            if(snap.empty) { empty.style.display="block"; return; }
-            empty.style.display="none";
+        if(snap.empty) { document.getElementById("empty-state").style.display="block"; return; }
+        document.getElementById("empty-state").style.display="none";
 
-            snap.forEach(doc => {
-                const m = doc.data(); m.id = doc.id; allMovies.push(m);
-                const d = document.createElement("div"); d.className = "poster-card";
-                const badge = m.type === 'series' ? 'SERIES' : 'MOVIE';
-                const action = m.type === 'series' ? `openSeriesView('${m.id}', '${m.tmdbID}')` : `play('${m.link}')`;
-                d.innerHTML = `
-                    <div class="poster-badge">${badge}</div>
-                    <img src="${m.poster}" class="poster" onclick="${action}">
-                    <div style="position:absolute; top:-5px; right:-5px; width:24px; height:24px; background:#222; border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px solid #333;" onclick="deleteMovie('${m.id}', event)">
-                        <i class="fas fa-times" style="font-size:10px; color:#fff;"></i>
-                    </div>
-                `;
-                grid.appendChild(d);
-            });
-            setupHero();
+        snap.forEach(docSnap => {
+            const m = docSnap.data(); m.id = docSnap.id; allMovies.push(m);
+            const d = document.createElement("div"); d.className = "poster-card";
+            const badge = m.type === 'series' ? 'SERIES' : 'MOVIE';
+            const action = m.type === 'series' ? `openSeriesView('${m.id}', '${m.tmdbID}')` : `play('${m.link}')`;
+            d.innerHTML = `
+                <div class="poster-badge">${badge}</div>
+                <img src="${m.poster}" class="poster" onclick="${action}">
+                <div class="delete-btn admin-only" onclick="deleteContent('${m.id}', event)">
+                    <i class="fas fa-trash"></i>
+                </div>
+            `;
+            grid.appendChild(d);
         });
+        setupHero();
     }
 
     function setupHero() {
-        if(allMovies.length>0) {
-            const r = allMovies[Math.floor(Math.random()*allMovies.length)];
+        if(allMovies.length > 0) {
+            const r = allMovies[Math.floor(Math.random() * allMovies.length)];
             document.getElementById("hero").style.backgroundImage = `url('${r.backdrop || r.poster}')`;
             document.getElementById("hero-title").innerText = r.title;
             document.getElementById("hero-desc").innerText = r.overview;
             document.getElementById("hero-tag").innerText = r.type === 'series' ? 'TV SERIES' : 'MOVIE';
             if(r.type==='movie' && r.link) {
-                const b=document.getElementById("hero-play"); b.style.display="inline-flex"; b.onclick=()=>play(r.link);
+                const b = document.getElementById("hero-play");
+                b.style.display = 'inline-flex';
+                b.onclick = () => window.play(r.link);
             }
         }
     }
 
     // --- SEARCH ---
-    window.searchContent=async()=>{
-        const q=document.getElementById("search-q").value; 
-        const type=document.getElementById("add-type").value;
-        const resDiv=document.getElementById("search-res"); 
-        resDiv.innerHTML='Search...';
+    window.searchContent = async () => {
+        const q = document.getElementById("search-q").value; 
+        const type = document.getElementById("add-type").value;
+        const resDiv = document.getElementById("search-res"); 
+        resDiv.innerHTML='<div style="color:#666; font-size:12px;">Searching...</div>';
         try {
             if(type==='movie') {
                 const r=await fetch(`https://www.omdbapi.com/?apikey=${OMDB_KEY}&s=${encodeURIComponent(q)}&type=movie`);
-                const d=await r.json(); if(d.Response==="False") throw new Error(); 
-                showRes(d.Search,'omdb');
+                const d=await r.json(); if(d.Response==="False") throw new Error(); showRes(d.Search,'omdb');
             } else {
                 const proxy=`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://api.themoviedb.org/3/search/tv?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}`)}`;
-                const r=await fetch(proxy); const d=await r.json(); 
-                showRes(d.results,'tmdb');
+                const r=await fetch(proxy); const d=await r.json(); showRes(d.results,'tmdb');
             }
-        } catch(e) { resDiv.innerHTML='Not found'; }
+        } catch(e) { resDiv.innerHTML='<div style="color:#666; font-size:12px;">Not found</div>'; }
     }
 
     function showRes(list,src) {
@@ -421,7 +467,10 @@
                 const r=await fetch(proxy); const d=await r.json();
                 tempItem={title:d.name,poster:`https://image.tmdb.org/t/p/w500${d.poster_path}`,backdrop:`https://image.tmdb.org/t/p/original${d.backdrop_path}`,overview:d.overview,tmdbID:d.id,totalSeasons:d.number_of_seasons,type:'series'};
             }
-            document.getElementById("sel-title").innerText=tempItem.title; document.getElementById("step-2").style.display="block";
+            document.getElementById("sel-title").innerText=tempItem.title; 
+            document.getElementById("add-search-ui").style.display="none";
+            document.getElementById("search-res").innerHTML="";
+            document.getElementById("step-2").style.display="block";
             const type=document.getElementById("add-type").value;
             if(type==='series'){ document.getElementById("movie-options").style.display='none'; document.getElementById("series-msg").style.display='block'; }
             else { document.getElementById("movie-options").style.display='block'; document.getElementById("series-msg").style.display='none'; }
@@ -434,7 +483,7 @@
         document.getElementById("vid-link").value = "";
     }
 
-    window.saveToDB=()=>{
+    window.saveToDB = async () => {
         const type=document.getElementById("add-type").value;
         if(type==='movie') {
             const link=document.getElementById("vid-link").value; 
@@ -442,15 +491,18 @@
         } else finalize("");
     }
 
-    function finalize(link) {
+    async function finalize(link) {
         tempItem.link=link; tempItem.createdAt=Date.now();
-        moviesCol.add(tempItem).then(()=>{ closeModal("add-modal"); resetAddModal(); loadLib(); });
+        await addDoc(moviesCol, tempItem);
+        window.closeModal("add-modal"); resetAddModal(); loadLib();
     }
 
-    // --- SERIES VIEW ---
-    window.openSeriesView=async(id,tmdb)=>{
+    // --- SERIES ---
+    window.openSeriesView = async (id, tmdb) => {
         activeSeriesID=id; activeTmdbID=tmdb;
-        const doc=await moviesCol.doc(id).get(); const d=doc.data();
+        const docRef = doc(db, "movies", id);
+        const docSnap = await getDoc(docRef);
+        const d = docSnap.data();
         
         document.getElementById("s-backdrop").style.backgroundImage = `url('${d.backdrop}')`;
         document.getElementById("s-title").innerText = d.title;
@@ -458,7 +510,9 @@
         
         const sel=document.getElementById("s-season"); sel.innerHTML="<option>Season...</option>";
         for(let i=1; i<=d.totalSeasons; i++) sel.innerHTML+=`<option value="${i}">Season ${i}</option>`;
-        loadDbEps(); document.getElementById("series-view").classList.add("active");
+        
+        loadDbEps(); 
+        document.getElementById("series-view").classList.add("active");
     }
 
     window.closeSeriesView=()=>{ document.getElementById("series-view").classList.remove("active"); }
@@ -472,25 +526,31 @@
         } catch(e) {}
     }
 
-    window.saveEp=()=>{
+    window.saveEp = async () => {
         const s=document.getElementById("s-season").value; const val=document.getElementById("s-ep").value; const link=document.getElementById("s-link").value;
         if(!link||val.includes("Ep...")) return;
         const [num,title]=val.split("|");
-        moviesCol.doc(activeSeriesID).collection("episodes").add({season:parseInt(s),episode:parseInt(num),title:title,link:link,createdAt:Date.now()}).then(()=>{document.getElementById("ep-link").value=""; loadDbEps();});
+        const epCol = collection(db, "movies", activeSeriesID, "episodes");
+        await addDoc(epCol, { season:parseInt(s), episode:parseInt(num), title:title, link:link });
+        document.getElementById("s-link").value=""; loadDbEps();
     }
 
-    function loadDbEps() {
+    async function loadDbEps() {
         const div=document.getElementById("ep-list"); div.innerHTML="Loading...";
-        moviesCol.doc(activeSeriesID).collection("episodes").get().then(snap=>{
-            div.innerHTML=""; let eps=[]; snap.forEach(d=>eps.push({id:d.id,...d.data()}));
-            eps.sort((a,b)=>(a.season-b.season)||(a.episode-b.episode));
-            eps.forEach(e=>{ 
-                div.innerHTML += `<div class="ep-card" onclick="play('${e.link}')">
+        const epCol = collection(db, "movies", activeSeriesID, "episodes");
+        const snap = await getDocs(epCol);
+        
+        div.innerHTML=""; 
+        let eps=[]; snap.forEach(d=>eps.push({id:d.id,...d.data()}));
+        eps.sort((a,b)=>(a.season-b.season)||(a.episode-b.episode));
+        
+        eps.forEach(e=>{ 
+            div.innerHTML += `
+                <div class="ep-card" onclick="play('${e.link}')">
                     <div style="width:30px;height:30px;border-radius:50%;background:white;color:black;display:flex;align-items:center;justify-content:center;"><i class="fas fa-play" style="font-size:10px;"></i></div>
                     <div style="flex:1;"><b>${e.episode}.</b> ${e.title}<div style="font-size:12px;color:#888;">S${e.season}</div></div>
-                    <i class="fas fa-trash" style="color:#666;padding:10px;" onclick="delEp('${e.id}', event)"></i>
+                    <i class="fas fa-trash admin-only ep-delete" onclick="delEp('${e.id}', event)"></i>
                 </div>`; 
-            });
         });
     }
 
@@ -516,11 +576,23 @@
     window.toggleFit=()=>{ const v=document.querySelector("video"); if(v){ isFit=!isFit; v.style.objectFit = isFit ? "cover" : "contain"; } }
     window.closePlayer=()=>{ document.getElementById("player").style.display="none"; document.getElementById("vid-con").innerHTML=""; }
 
-    window.openModal=(id)=>{document.getElementById(id).style.display="flex";}
-    window.closeModal=(id)=>{document.getElementById(id).style.display="none";}
-    window.deleteMovie=(id,e)=>{if(e)e.stopPropagation(); if(confirm("Delete?")) moviesCol.doc(id).delete().then(loadLib);}
-    window.delEp=(id,e)=>{if(e)e.stopPropagation(); if(confirm("Delete?")) moviesCol.doc(activeSeriesID).collection("episodes").doc(id).delete().then(loadDbEps);}
+    // --- UTILS ---
+    window.openModal=(id)=>{document.getElementById(id).style.display="flex"; setTimeout(()=>document.getElementById(id).classList.add('active'),10);}
+    window.closeModal=(id)=>{document.getElementById(id).classList.remove('active'); setTimeout(()=>document.getElementById(id).style.display="none",300);}
+    window.selectItem = selectItem;
+    
+    window.deleteContent = async (id, e) => {
+        if(e) e.stopPropagation();
+        if(confirm("Delete?")) { await deleteDoc(doc(db, "movies", id)); loadLib(); }
+    };
+    
+    window.delEp = async (id, e) => {
+        if(e) e.stopPropagation();
+        if(confirm("Delete?")) { await deleteDoc(doc(db, "movies", activeSeriesID, "episodes", id)); loadDbEps(); }
+    };
+
     window.addEventListener("scroll",()=>document.getElementById("navbar").classList.toggle("scrolled",window.scrollY>50));
 </script>
 </body>
 </html>
+
