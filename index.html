@@ -6,7 +6,7 @@
     <title>Amitflix</title>
     
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#050505">
+    <meta name="the me-color" content="#050505">
     
     <!-- FONTS & ICONS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -21,7 +21,6 @@
 
     <style>
         :root { 
-            /* Dark yet Colorful Theme */
             --primary: #FF0055; 
             --accent: #7928CA;
             --bg: #050505; 
@@ -34,24 +33,34 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; margin: 0; padding: 0; min-height: 100vh; overflow-x: hidden; }
         
-        /* Subtle Color Glow in Background */
-        body::before {
-            content: ''; position: fixed; top: -10%; left: -10%; width: 50%; height: 50%;
-            background: radial-gradient(circle, rgba(121, 40, 202, 0.15), transparent 70%);
-            z-index: -1; pointer-events: none;
-        }
-        body::after {
-            content: ''; position: fixed; bottom: -10%; right: -10%; width: 50%; height: 50%;
-            background: radial-gradient(circle, rgba(255, 0, 85, 0.1), transparent 70%);
-            z-index: -1; pointer-events: none;
-        }
-
         ::-webkit-scrollbar { width: 0px; background: transparent; }
 
         /* --- LOADER --- */
         #app-loader { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg); z-index: 9999; display:flex; align-items:center; justify-content:center; flex-direction: column; transition: opacity 0.5s; }
         .spinner { width: 50px; height: 50px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; box-shadow: 0 0 20px rgba(255, 0, 85, 0.3);}
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- INTRO ANIMATION --- */
+        #intro-overlay {
+            position: fixed; inset: 0; background: #000; z-index: 9998; /* Below loader */
+            display: flex; align-items: center; justify-content: center;
+            animation: fadeOutIntro 0.5s ease 3.0s forwards;
+            pointer-events: none;
+        }
+        .intro-letter {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 15rem; color: var(--primary);
+            transform: scale(1);
+            animation: netflixZoom 2.5s cubic-bezier(0.645, 0.045, 0.355, 1) forwards;
+            text-shadow: 0 0 20px rgba(229, 9, 20, 0.5);
+        }
+        @keyframes netflixZoom {
+            0% { transform: scale(1); opacity: 0; } 
+            20% { opacity: 1; transform: scale(1); } 
+            80% { opacity: 1; transform: scale(1.5); } 
+            100% { transform: scale(30); opacity: 0; }
+        }
+        @keyframes fadeOutIntro { to { opacity: 0; } }
 
         /* --- VISIBILITY CLASSES --- */
         .admin-only { display: none !important; }
@@ -81,9 +90,7 @@
             background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
             cursor: pointer; transition: 0.3s; backdrop-filter: blur(5px);
         }
-        .nav-btn:hover { background: var(--text); transform: translateY(-2px); }
-        .nav-btn:hover i { color: black; }
-        .nav-btn i { color: white; font-size: 18px; transition: color 0.3s; }
+        .nav-btn i { color: white; font-size: 18px; }
 
         /* --- HERO --- */
         .hero { 
@@ -100,7 +107,7 @@
         .hero-video {
             width: 100vw; height: 56.25vw; min-height: 100vh; min-width: 177.77vh; 
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            opacity: 0; transition: opacity 2s ease;
+            opacity: 0; transition: opacity 1.5s ease;
         }
         .hero::after { 
             content:''; position: absolute; inset:0; z-index: 2;
@@ -122,7 +129,6 @@
             cursor: pointer; display: inline-flex; align-items: center; gap: 10px; font-size: 16px; 
             transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 0 30px rgba(255,255,255,0.15);
         }
-        .btn-play:hover { transform: scale(1.05); }
 
         /* --- SECTIONS --- */
         .section { padding: 0 5%; margin-bottom: 50px; position: relative; z-index: 20; }
@@ -142,7 +148,6 @@
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             border: 1px solid rgba(255,255,255,0.1);
         }
-        .poster:hover { transform: scale(1.05) translateY(-5px); border-color: var(--primary); }
         
         .poster-badge { 
             position: absolute; top: 8px; left: 8px; 
@@ -156,9 +161,7 @@
             width: 28px; height: 28px; background: var(--primary); border: 2px solid #fff; 
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
             color: #fff; font-size: 12px; z-index: 50; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            transition: 0.2s;
         }
-        .delete-btn:hover { transform: scale(1.1); background: red; }
 
         /* --- MODALS --- */
         .modal { display: none; position: fixed; inset: 0; z-index: 5000; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; backdrop-filter: blur(15px); }
@@ -181,7 +184,6 @@
             color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer; 
             box-shadow: 0 10px 20px rgba(255, 0, 85, 0.3); transition: 0.3s;
         }
-        .btn-main:active { transform: scale(0.98); opacity: 0.9; }
 
         /* --- SERIES VIEW --- */
         .series-view { position: fixed; inset: 0; background: var(--bg); z-index: 6000; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); overflow-y: auto; }
@@ -194,9 +196,7 @@
             background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); 
             margin-bottom: 10px; position: relative; transition: 0.2s;
         }
-        .ep-card:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.1); }
         .ep-delete { position: absolute; right: 10px; top: 10px; color: #666; font-size: 14px; padding: 10px; cursor: pointer; }
-        .ep-delete:hover { color: var(--primary); }
 
         /* Responsive Series UI */
         @media (max-width: 600px) {
@@ -214,6 +214,7 @@
 </head>
 <body>
 
+<div id="intro-overlay"><div class="intro-letter">A</div></div>
 <div id="app-loader"><div class="spinner"></div></div>
 
 <header id="navbar">
@@ -289,7 +290,7 @@
             <div id="movie-options">
                 <input id="vid-link" placeholder="Paste Link (MP4/Drive)">
                 <div style="text-align:center; margin-bottom:15px;">
-                    <button class="btn-main" style="background:#333; font-size:12px; padding:10px;" onclick="searchSources()">🔍 Find Free Streams</button>
+                    <button class="btn-main" style="background:#222; font-size:12px; padding:10px;" onclick="searchSources()">🔍 Find Free Streams</button>
                 </div>
             </div>
             <div id="series-msg" style="display:none; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; font-size:13px; color:#ccc;">Creates a Series Folder.</div>
@@ -311,8 +312,8 @@
         <div class="admin-only" style="background:rgba(255,255,255,0.05); padding:20px; border-radius:16px; margin:25px 0;">
             <h4 style="margin:0 0 15px 0;">Add Episode</h4>
             <div class="add-ep-row" style="display:flex; gap:10px;">
-                <select id="s-season" onchange="fetchTMDbEpisodes()" style="flex:1"></select>
-                <select id="s-ep" style="flex:2"><option>Ep...</option></select>
+                <select id="s-season" onchange="fetchTMDbEpisodes()"></select>
+                <select id="s-ep"><option>Ep...</option></select>
             </div>
             <input id="s-link" placeholder="Paste Link">
             <button class="btn-main" onclick="saveEp()">Add</button>
@@ -373,7 +374,7 @@
 
         loadLib();
         loadWebTrending();
-        setTimeout(() => document.getElementById("app-loader")?.remove(), 2000);
+        setTimeout(() => document.getElementById("app-loader")?.remove(), 3500);
     } catch(e) { console.error(e); }
 
     // --- AUTH UI ---
@@ -400,7 +401,6 @@
             const r = allMovies[Math.floor(Math.random() * allMovies.length)];
             const bg = r.backdrop || r.poster;
             
-            // Set Static BG first
             document.getElementById("hero-bg").style.backgroundImage = `url('${bg}')`;
             document.getElementById("hero-title").innerText = r.title;
             document.getElementById("hero-desc").innerText = r.overview;
@@ -412,8 +412,7 @@
                 b.onclick = () => window.play(r.link);
             }
 
-            // Attempt to Fetch Trailer (Desktop Only preferred)
-            // Prioritize TMDB ID if available, else look up by IMDB ID
+            // Attempt to Fetch Trailer
             let tmdbId = r.tmdbID;
             if (!tmdbId && r.imdbID) {
                  try {
@@ -432,8 +431,8 @@
                     const trailer = data.results.find(v => v.type === 'Trailer' && v.site === 'YouTube') || data.results[0];
                     if(trailer) {
                         const wrapper = document.getElementById("hero-video-wrapper");
-                        wrapper.innerHTML = `<iframe class="hero-video" src="https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailer.key}&start=10" frameborder="0" allow="autoplay; encrypted-media" style="opacity:0; transition:opacity 2s;"></iframe>`;
-                        setTimeout(() => { if(wrapper.querySelector('iframe')) wrapper.querySelector('iframe').style.opacity='1'; }, 1000);
+                        wrapper.innerHTML = `<iframe class="hero-video" src="https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailer.key}&start=10" frameborder="0" allow="autoplay; encrypted-media" style="width:100%; height:100%; object-fit:cover;"></iframe>`;
+                        document.getElementById("hero-video").style.opacity = "1";
                     }
                 } catch(e) {}
             }
@@ -554,7 +553,7 @@
     window.saveToDB = async () => { const type=document.getElementById("add-type").value; if(type==='movie') { const link=document.getElementById("vid-link").value; if(link) finalize(link); else alert("Link required"); } else finalize(""); }
     async function finalize(link) { tempItem.link=link; tempItem.createdAt=Date.now(); await addDoc(moviesCol, tempItem); window.closeModal("add-modal"); resetAddModal(); loadLib(); }
 
-    // --- SERIES ---
+    // --- SERIES VIEW ---
     window.openSeriesView=async(id,tmdb)=>{
         activeSeriesID=id; activeTmdbID=tmdb;
         const docRef=doc(db,"movies",id); const docSnap=await getDoc(docRef); const d=docSnap.data();
