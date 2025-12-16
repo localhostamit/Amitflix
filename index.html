@@ -100,7 +100,7 @@
         .hero-video {
             width: 100vw; height: 56.25vw; min-height: 100vh; min-width: 177.77vh; 
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            opacity: 0; transition: opacity 1.5s ease;
+            opacity: 0; transition: opacity 2s ease;
         }
         .hero::after { 
             content:''; position: absolute; inset:0; z-index: 2;
@@ -138,7 +138,7 @@
         
         .poster { 
             width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 12px; 
-            background: var(--surface); box-shadow: 0 10px 20px rgba(0,0,0,0.5); 
+            background: var(--surface); box-shadow: 0 10px 20px rgba(0,0,0,0.3); 
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             border: 1px solid rgba(255,255,255,0.1);
         }
@@ -198,6 +198,12 @@
         .ep-delete { position: absolute; right: 10px; top: 10px; color: #666; font-size: 14px; padding: 10px; cursor: pointer; }
         .ep-delete:hover { color: var(--primary); }
 
+        /* Responsive Series UI */
+        @media (max-width: 600px) {
+            .add-ep-row { flex-direction: column; gap: 10px; }
+            .add-ep-row select, .add-ep-row input, .add-ep-row button { width: 100% !important; flex: none; margin-bottom: 5px; }
+        }
+
         /* --- PLAYER --- */
         #player { background: black; z-index: 9999; display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; }
         #vid-con { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
@@ -224,7 +230,7 @@
 
 <div class="hero" id="hero">
     <div class="hero-bg" id="hero-bg"></div>
-    <div class="hero-video-wrapper"><div class="hero-video" id="hero-video"></div></div>
+    <div class="hero-video-wrapper" id="hero-video-wrapper"></div>
     
     <div class="hero-content">
         <span class="hero-tag" id="hero-tag">FEATURED</span>
@@ -282,6 +288,9 @@
             <p style="color:#aaa; font-size:13px;">Adding: <b id="sel-title" style="color:white"></b></p>
             <div id="movie-options">
                 <input id="vid-link" placeholder="Paste Link (MP4/Drive)">
+                <div style="text-align:center; margin-bottom:15px;">
+                    <button class="btn-main" style="background:#333; font-size:12px; padding:10px;" onclick="searchSources()">🔍 Find Free Streams</button>
+                </div>
             </div>
             <div id="series-msg" style="display:none; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; font-size:13px; color:#ccc;">Creates a Series Folder.</div>
             
@@ -301,9 +310,9 @@
         
         <div class="admin-only" style="background:rgba(255,255,255,0.05); padding:20px; border-radius:16px; margin:25px 0;">
             <h4 style="margin:0 0 15px 0;">Add Episode</h4>
-            <div style="display:flex; gap:10px;">
-                <select id="s-season" onchange="fetchTMDbEpisodes()"></select>
-                <select id="s-ep"><option>Ep...</option></select>
+            <div class="add-ep-row" style="display:flex; gap:10px;">
+                <select id="s-season" onchange="fetchTMDbEpisodes()" style="flex:1"></select>
+                <select id="s-ep" style="flex:2"><option>Ep...</option></select>
             </div>
             <input id="s-link" placeholder="Paste Link">
             <button class="btn-main" onclick="saveEp()">Add</button>
@@ -404,15 +413,27 @@
             }
 
             // Attempt to Fetch Trailer (Desktop Only preferred)
-            if(r.tmdbID && window.innerWidth > 768) {
+            // Prioritize TMDB ID if available, else look up by IMDB ID
+            let tmdbId = r.tmdbID;
+            if (!tmdbId && r.imdbID) {
+                 try {
+                    const findRes = await fetch(`https://api.themoviedb.org/3/find/${r.imdbID}?api_key=${TMDB_KEY}&external_source=imdb_id`);
+                    const findData = await findRes.json();
+                    if (findData.movie_results && findData.movie_results.length > 0) tmdbId = findData.movie_results[0].id;
+                    else if (findData.tv_results && findData.tv_results.length > 0) tmdbId = findData.tv_results[0].id;
+                 } catch(e) {}
+            }
+
+            if(tmdbId) {
                 try {
-                    const res = await fetch(`https://api.themoviedb.org/3/movie/${r.tmdbID}/videos?api_key=${TMDB_KEY}`);
+                    const typePath = r.type === 'series' ? 'tv' : 'movie';
+                    const res = await fetch(`https://api.themoviedb.org/3/${typePath}/${tmdbId}/videos?api_key=${TMDB_KEY}`);
                     const data = await res.json();
-                    const trailer = data.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+                    const trailer = data.results.find(v => v.type === 'Trailer' && v.site === 'YouTube') || data.results[0];
                     if(trailer) {
-                        document.getElementById("hero-video").innerHTML = 
-                            `<iframe src="https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailer.key}" frameborder="0" allow="autoplay; encrypted-media" style="width:100%; height:100%; object-fit:cover;"></iframe>`;
-                        document.getElementById("hero-video").style.opacity = "1";
+                        const wrapper = document.getElementById("hero-video-wrapper");
+                        wrapper.innerHTML = `<iframe class="hero-video" src="https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailer.key}&start=10" frameborder="0" allow="autoplay; encrypted-media" style="opacity:0; transition:opacity 2s;"></iframe>`;
+                        setTimeout(() => { if(wrapper.querySelector('iframe')) wrapper.querySelector('iframe').style.opacity='1'; }, 1000);
                     }
                 } catch(e) {}
             }
@@ -462,7 +483,7 @@
             const d = document.createElement("div"); d.className = "poster-card";
             const safeTitle = m.title.replace(/'/g, "");
             const safeOverview = m.overview.replace(/'/g, "").replace(/"/g, "");
-            d.innerHTML = `<div class="poster-badge" style="background:#FF0055;">HOT</div><img src="https://image.tmdb.org/t/p/w200${m.poster_path}" class="poster" onclick="openAddFromTrending('${m.id}', '${safeTitle}', '${m.poster_path}', '${m.backdrop_path}', '${safeOverview}')">`;
+            d.innerHTML = `<div class="poster-badge" style="background:#E50914;">HOT</div><img src="https://image.tmdb.org/t/p/w200${m.poster_path}" class="poster" onclick="openAddFromTrending('${m.id}', '${safeTitle}', '${m.poster_path}', '${m.backdrop_path}', '${safeOverview}')">`;
             list.appendChild(d);
         });
     }
@@ -507,7 +528,7 @@
         try {
             if(src==='omdb') {
                 const r=await fetch(`https://www.omdbapi.com/?apikey=${OMDB_KEY}&i=${m.imdbID}`); const d=await r.json();
-                tempItem={title:d.Title,poster:d.Poster,backdrop:d.Poster,overview:d.Plot,type:'movie', tmdbID: m.imdbID}; // Use IMDB ID as placeholder
+                tempItem={title:d.Title,poster:d.Poster,backdrop:d.Poster,overview:d.Plot,type:'movie', imdbID: m.imdbID}; 
             } else {
                 const proxy=`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://api.themoviedb.org/3/tv/${m.id}?api_key=${TMDB_KEY}`)}`;
                 const r=await fetch(proxy); const d=await r.json();
@@ -519,6 +540,14 @@
             if(type==='series'){ document.getElementById("movie-options").style.display='none'; document.getElementById("series-msg").style.display='block'; }
             else { document.getElementById("movie-options").style.display='block'; document.getElementById("series-msg").style.display='none'; }
         } catch(e) {}
+    }
+
+    // --- SMART DISCOVERY ---
+    window.searchSources = () => {
+        const title = document.getElementById("sel-title").innerText;
+        if(!title) return;
+        window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(title + " full movie")}`, '_blank');
+        window.open(`https://archive.org/search.php?query=${encodeURIComponent(title)}`, '_blank');
     }
 
     window.resetAddModal = () => { document.getElementById("step-2").style.display="none"; document.getElementById("add-search-ui").style.display="flex"; document.getElementById("vid-link").value = ""; }
