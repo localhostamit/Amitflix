@@ -254,7 +254,7 @@
             
             <!-- STABLE GRID LAYOUT -->
             <div class="add-ep-grid">
-                <select id="s-season" onchange="fetchTMDbEpisodes()"></select>
+                <select id="s-season" onchange="fetchTMDbEpisodes()" style="flex:1"></select>
                 <select id="s-ep"><option>Ep...</option></select>
             </div>
             
@@ -497,4 +497,116 @@
     window.openSourceSearch = (platform) => {
         const title = document.getElementById("sel-title").innerText;
         window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(title + " full movie")}`, '_blank');
-        window.open(`https://archive.org/search.
+        window.open(`https://archive.org/search.php?query=${encodeURIComponent(title)}`, '_blank');
+    }
+    
+    window.searchSeriesSources = () => {
+        const season = document.getElementById("s-season").value;
+        const episode = document.getElementById("s-ep").options[document.getElementById("s-ep").selectedIndex].text;
+        const query = `${activeSeriesTitle} Season ${season} ${episode}`;
+        window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(query + " scene")}`, '_blank');
+        window.open(`https://www.google.com/search?q=${encodeURIComponent(query + " watch online free")}`, '_blank');
+    }
+
+    window.resetAddModal = () => { document.getElementById("step-2").style.display="none"; document.getElementById("add-search-ui").style.display="flex"; document.getElementById("vid-link").value = ""; }
+    window.saveToDB = async () => { const type=document.getElementById("add-type").value; if(type==='movie') { const link=document.getElementById("vid-link").value; if(link) finalize(link); else alert("Link required"); } else finalize(""); }
+    async function finalize(link) { tempItem.link=link; tempItem.createdAt=Date.now(); await addDoc(moviesCol, tempItem); window.closeModal("add-modal"); resetAddModal(); loadLib(); }
+
+    // --- SERIES VIEW ---
+    window.openSeriesView=async(id,tmdb)=>{
+        activeSeriesID=id; activeTmdbID=tmdb;
+        const docRef=doc(db,"movies",id); const docSnap=await getDoc(docRef); const d=docSnap.data();
+        activeSeriesTitle = d.title;
+        activeSeriesPoster = d.poster; // Store poster for CW
+        document.getElementById("s-backdrop").style.backgroundImage = `url('${d.backdrop}')`; document.getElementById("s-title").innerText = d.title; document.getElementById("s-desc").innerText = d.overview;
+        const sel=document.getElementById("s-season"); sel.innerHTML="<option>Season...</option>"; for(let i=1; i<=d.totalSeasons; i++) sel.innerHTML+=`<option value="${i}">Season ${i}</option>`;
+        loadDbEps(); document.getElementById("series-view").classList.add("active");
+    }
+    window.closeSeriesView=()=>{ document.getElementById("series-view").classList.remove("active"); }
+    window.fetchTMDbEpisodes=async()=>{ const s=document.getElementById("s-season").value; const epSel=document.getElementById("s-ep"); try { const proxy=`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://api.themoviedb.org/3/tv/${activeTmdbID}/season/${s}?api_key=${TMDB_KEY}`)}`; const r=await fetch(proxy); const d=await r.json(); epSel.innerHTML="<option>Ep...</option>"; d.episodes.forEach(e=>epSel.innerHTML+=`<option value="${e.episode_number}|${e.name}">Ep ${e.episode_number}</option>`); } catch(e){} }
+    window.saveEp = async () => { const s=document.getElementById("s-season").value; const val=document.getElementById("s-ep").value; const link=document.getElementById("s-link").value; if(!link||val.includes("Ep...")) return; const [num,title]=val.split("|"); const epCol = collection(db, "movies", activeSeriesID, "episodes"); await addDoc(epCol, { season:parseInt(s), episode:parseInt(num), title:title, link:link }); document.getElementById("s-link").value=""; loadDbEps(); }
+    async function loadDbEps() { const div=document.getElementById("ep-list"); div.innerHTML="Loading..."; const epCol = collection(db, "movies", activeSeriesID, "episodes"); const snap = await getDocs(epCol); div.innerHTML=""; let eps=[]; snap.forEach(d=>eps.push({id:d.id,...d.data()})); eps.sort((a,b)=>(a.season-b.season)||(a.episode-b.episode)); eps.forEach(e=>{ div.innerHTML+=`<div class="ep-card" onclick="play('${e.link}', null, '${activeSeriesID}_${e.id}', '${activeSeriesPoster}')"><div style="flex:1;"><div style="font-size:15px; font-weight:600;">${e.episode}. ${e.title}</div><div style="font-size:12px;color:#888;">Season ${e.season}</div></div><i class="fas fa-trash admin-only ep-delete" onclick="delEp('${e.id}', event)"></i></div>`; }); 
+    // Re-apply admin visibility
+    if(document.body.classList.contains('is-admin')) document.querySelectorAll('.admin-only').forEach(el=>el.style.display='block');
+    }
+
+    // --- PLAYER ---
+    let isFit = false;
+    window.play = (url, title, id, poster) => {
+        const p = document.getElementById("player"); const con = document.getElementById("vid-con");
+        const fb = document.getElementById("yt-fallback");
+        p.style.display = "block"; con.innerHTML = ""; fb.style.display = "none";
+        
+        // Ensure poster is not null if saving progress
+        const savePoster = poster || 'https://via.placeholder.com/150';
+
+        let startTime = 0;
+        if(id) { const saved = localStorage.getItem('watch_progress_' + id); if(saved) startTime = JSON.parse(saved).time; }
+
+        // CHECK FOR ARCHIVE.ORG
+        if(url.includes("archive.org")) {
+             let src = url.includes("/details/") ? url.replace("/details/", "/embed/") : url;
+             con.innerHTML = `<iframe src="${src}?autoplay=1" allowfullscreen style="width:100%; height:100%" frameborder="0"></iframe>`;
+             document.getElementById("player-toolbar").style.display = 'none';
+        }
+        // CHECK FOR YOUTUBE
+        else if(url.match(/(?:youtube\.com|youtu\.be)/)) {
+            const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+            if(ytMatch) {
+                currentYtLink = url;
+                let player;
+                window.onYouTubeIframeAPIReady = function() {
+                  player = new YT.Player('vid-con', {
+                    height: '100%', width: '100%', videoId: ytMatch[1],
+                    playerVars: { 'autoplay': 1, 'controls': 1 },
+                    events: { 'onError': onPlayerError }
+                  });
+                };
+                if (!window.YT) {
+                    var tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api";
+                    var firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+                } else { onYouTubeIframeAPIReady(); }
+                document.getElementById("player-toolbar").style.display = 'none';
+            }
+        } 
+        else if(url.includes("drive.google")) {
+            con.innerHTML = `<iframe src="${url.replace("/view", "/preview")}" allowfullscreen style="width:100%; height:100%"></iframe>`;
+            document.getElementById("player-toolbar").style.display = 'none';
+        } 
+        else {
+            document.getElementById("player-toolbar").style.display = 'flex';
+            const v = document.createElement("video"); v.autoplay = true; v.controls = true; v.style.width="100%"; v.style.height="100%";
+            if(url.includes(".m3u8") && Hls.isSupported()) { const h = new Hls(); h.loadSource(url); h.attachMedia(v); } else { v.src = url; }
+            v.currentTime = startTime;
+            v.addEventListener('timeupdate', () => {
+                if(id && v.duration > 0) {
+                    const pct = (v.currentTime / v.duration) * 100;
+                    localStorage.setItem('watch_progress_' + id, JSON.stringify({ time: v.currentTime, pct: pct, id: id, link: url, poster: savePoster }));
+                }
+            });
+            con.appendChild(v);
+        }
+    }
+
+    function onPlayerError(event) {
+        if(event.data === 150 || event.data === 101) {
+            document.getElementById("yt-fallback").style.display = "block";
+            document.getElementById("vid-con").innerHTML = `<div style="color:#aaa; text-align:center;">Video Restricted.<br>Use the button below.</div>`;
+        }
+    }
+
+    window.setBrightness=(v)=>{ const el=document.querySelector("video, iframe"); if(el) el.style.filter=`brightness(${v})`; }
+    window.toggleFit=()=>{ const v=document.querySelector("video"); if(v){ isFit=!isFit; v.style.objectFit = isFit ? "cover" : "contain"; } }
+    window.closePlayer=()=>{ document.getElementById("player").style.display="none"; document.getElementById("vid-con").innerHTML=""; updateContinueWatching(); }
+
+    window.openModal=(id)=>{document.getElementById(id).style.display="flex"; setTimeout(()=>document.getElementById(id).classList.add('active'),10);}
+    window.closeModal=(id)=>{document.getElementById(id).classList.remove('active'); setTimeout(()=>document.getElementById(id).style.display="none",300);}
+    window.openLoginModal = () => window.openModal('login-modal');
+    window.firebaseLogin = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById("email-input").value, document.getElementById("password-input").value); window.closeModal('login-modal'); alert("Admin Access Granted."); } catch(e) { alert("Error: " + e.message); } }
+    window.firebaseLogout = async () => { await signOut(auth); alert("Logged Out."); }
+    window.deleteContent = async (id, e) => { if(e) e.stopPropagation(); if(confirm("Delete?")) { await deleteDoc(doc(db, "movies", id)); loadLib(); } };
+    window.delEp = async (id, e) => { if(e) e.stopPropagation(); if(confirm("Delete?")) { await deleteDoc(doc(db, "movies", activeSeriesID, "episodes", id)); loadDbEps(); } };
+    window.addEventListener("scroll",()=>document.getElementById("navbar").classList.toggle("scrolled",window.scrollY>50));
+</script>
+</body>
+</html>
