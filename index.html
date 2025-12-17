@@ -62,7 +62,8 @@
         header.scrolled { background: rgba(5, 5, 5, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
         .logo { color: var(--primary); font-family: 'Bebas Neue', sans-serif; font-size: 34px; letter-spacing: 1px; cursor:pointer; background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px rgba(255, 0, 85, 0.4)); }
         .nav-actions { display: flex; align-items: center; gap: 15px; }
-        .nav-btn { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; backdrop-filter: blur(5px); }
+        .nav-btn { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; backdrop-filter: blur(5px); }
+        .nav-btn:active { transform: scale(0.95); background: var(--primary); }
         .nav-btn i { color: white; font-size: 18px; }
 
         /* --- HERO --- */
@@ -93,16 +94,16 @@
         .poster-progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,0.3); border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; overflow: hidden; }
         .poster-progress-bar { height: 100%; background: var(--primary); width: 0%; }
         
-        /* CLEAN DELETE BTN (Inside Poster) */
+        /* CLEAN DELETE BTN (Fixed Position) */
         .delete-btn { 
-            position: absolute; top: 6px; right: 6px; 
-            width: 26px; height: 26px; 
-            background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.2); 
+            position: absolute; top: 5px; right: 5px; 
+            width: 32px; height: 32px; 
+            background: rgba(229, 9, 20, 0.9); border: 1px solid rgba(255,255,255,0.5); 
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: 11px; z-index: 50; cursor: pointer; 
-            backdrop-filter: blur(4px); transition: 0.2s;
+            color: #fff; font-size: 14px; z-index: 50; cursor: pointer; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.8); transition: 0.2s;
         }
-        .delete-btn:hover { background: #FF0055; border-color: #FF0055; transform: scale(1.1); }
+        .delete-btn:hover { transform: scale(1.1); background: red; }
 
         /* --- MODALS --- */
         .modal { display: none; position: fixed; inset: 0; z-index: 5000; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; backdrop-filter: blur(15px); }
@@ -255,11 +256,21 @@
             <!-- STABLE GRID LAYOUT -->
             <div class="add-ep-grid">
                 <select id="s-season" onchange="fetchTMDbEpisodes()" style="flex:1"></select>
-                <select id="s-ep"><option>Ep...</option></select>
+                <select id="s-ep" style="flex:2"><option>Ep...</option></select>
             </div>
             
+            <!-- SMART SERIES SOURCE SELECTOR -->
+            <div class="add-ep-actions" style="flex-wrap:wrap; margin-bottom:10px;">
+                <button class="btn-main" style="background:#222; font-size:12px; padding:10px; flex:1; min-width:120px;" onclick="toggleSourceList('series-source-list')">🔍 Find Stream</button>
+            </div>
+            <div id="series-source-list" class="source-grid" style="display:none; margin-bottom:15px;">
+                <div class="source-btn" onclick="searchSeriesSources('yt')"><i class="fab fa-youtube"></i> YT</div>
+                <div class="source-btn" onclick="searchSeriesSources('google')"><i class="fab fa-google"></i> Web</div>
+                <div class="source-btn" onclick="searchSeriesSources('archive')"><i class="fas fa-landmark"></i> Arch</div>
+                <div class="source-btn" onclick="searchSeriesSources('dailymotion')"><i class="fas fa-video"></i> Daily</div>
+            </div>
+
             <div class="add-ep-actions">
-                <button class="btn-main" style="background:#222; font-size:12px; padding:10px; flex:1;" onclick="searchSeriesSources()">🔍 Search Stream</button>
                 <input id="s-link" placeholder="Paste Link" style="flex:2; margin-bottom:0;">
                 <button class="btn-main" onclick="saveEp()" style="width:auto; padding:0 30px;">Add</button>
             </div>
@@ -500,12 +511,17 @@
         window.open(`https://archive.org/search.php?query=${encodeURIComponent(title)}`, '_blank');
     }
     
-    window.searchSeriesSources = () => {
+    window.searchSeriesSources = (platform) => {
         const season = document.getElementById("s-season").value;
         const episode = document.getElementById("s-ep").options[document.getElementById("s-ep").selectedIndex].text;
+        if(!activeSeriesTitle) return;
+        
         const query = `${activeSeriesTitle} Season ${season} ${episode}`;
-        window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(query + " scene")}`, '_blank');
-        window.open(`https://www.google.com/search?q=${encodeURIComponent(query + " watch online free")}`, '_blank');
+        
+        if (platform === 'yt') window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, '_blank');
+        else if (platform === 'google') window.open(`https://www.google.com/search?q=${encodeURIComponent(query + " watch online free")}`, '_blank');
+        else if (platform === 'archive') window.open(`https://archive.org/search.php?query=${encodeURIComponent(query)}`, '_blank');
+        else if (platform === 'dailymotion') window.open(`https://www.dailymotion.com/search/${encodeURIComponent(query)}`, '_blank');
     }
 
     window.resetAddModal = () => { document.getElementById("step-2").style.display="none"; document.getElementById("add-search-ui").style.display="flex"; document.getElementById("vid-link").value = ""; }
@@ -521,6 +537,9 @@
         document.getElementById("s-backdrop").style.backgroundImage = `url('${d.backdrop}')`; document.getElementById("s-title").innerText = d.title; document.getElementById("s-desc").innerText = d.overview;
         const sel=document.getElementById("s-season"); sel.innerHTML="<option>Season...</option>"; for(let i=1; i<=d.totalSeasons; i++) sel.innerHTML+=`<option value="${i}">Season ${i}</option>`;
         loadDbEps(); document.getElementById("series-view").classList.add("active");
+        
+        // Reset
+        document.getElementById("ep-tools").style.display="none";
     }
     window.closeSeriesView=()=>{ document.getElementById("series-view").classList.remove("active"); }
     window.fetchTMDbEpisodes=async()=>{ const s=document.getElementById("s-season").value; const epSel=document.getElementById("s-ep"); try { const proxy=`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://api.themoviedb.org/3/tv/${activeTmdbID}/season/${s}?api_key=${TMDB_KEY}`)}`; const r=await fetch(proxy); const d=await r.json(); epSel.innerHTML="<option>Ep...</option>"; d.episodes.forEach(e=>epSel.innerHTML+=`<option value="${e.episode_number}|${e.name}">Ep ${e.episode_number}</option>`); } catch(e){} }
@@ -532,6 +551,8 @@
 
     // --- PLAYER ---
     let isFit = false;
+    window.openYouTube = () => { if(currentYtLink) window.open(currentYtLink, '_blank'); }
+
     window.play = (url, title, id, poster) => {
         const p = document.getElementById("player"); const con = document.getElementById("vid-con");
         const fb = document.getElementById("yt-fallback");
@@ -601,9 +622,6 @@
 
     window.openModal=(id)=>{document.getElementById(id).style.display="flex"; setTimeout(()=>document.getElementById(id).classList.add('active'),10);}
     window.closeModal=(id)=>{document.getElementById(id).classList.remove('active'); setTimeout(()=>document.getElementById(id).style.display="none",300);}
-    window.openLoginModal = () => window.openModal('login-modal');
-    window.firebaseLogin = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById("email-input").value, document.getElementById("password-input").value); window.closeModal('login-modal'); alert("Admin Access Granted."); } catch(e) { alert("Error: " + e.message); } }
-    window.firebaseLogout = async () => { await signOut(auth); alert("Logged Out."); }
     window.deleteContent = async (id, e) => { if(e) e.stopPropagation(); if(confirm("Delete?")) { await deleteDoc(doc(db, "movies", id)); loadLib(); } };
     window.delEp = async (id, e) => { if(e) e.stopPropagation(); if(confirm("Delete?")) { await deleteDoc(doc(db, "movies", activeSeriesID, "episodes", id)); loadDbEps(); } };
     window.addEventListener("scroll",()=>document.getElementById("navbar").classList.toggle("scrolled",window.scrollY>50));
