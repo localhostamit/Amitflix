@@ -6,7 +6,7 @@
     <title>Amitflix</title>
     
     <link rel="manifest" href="manifest.json">
-    <meta name="the me-color" content="#050505">
+    <meta name="theme-color" content="#050505">
     
     <!-- FONTS & ICONS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -14,6 +14,7 @@
     
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -25,7 +26,7 @@
             --accent: #7928CA;
             --bg: #050505; 
             --surface: #141414;
-            --glass: rgba(20, 20, 20, 0.85);
+            --glass: rgba(20, 20, 20, 0.95);
             --text: #ffffff;
             --gradient-main: linear-gradient(135deg, #FF0055, #7928CA);
         }
@@ -35,155 +36,78 @@
         
         ::-webkit-scrollbar { width: 0px; background: transparent; }
 
+        /* --- ANIMATIONS --- */
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .poster-container { animation: fadeSlideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }
+        @keyframes slideDown { from { opacity:0; transform:translateY(-10px); display:none; } to { opacity:1; transform:translateY(0); display:block; } }
+
         /* --- LOADER --- */
         #app-loader { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg); z-index: 9999; display:flex; align-items:center; justify-content:center; flex-direction: column; transition: opacity 0.5s; }
-        .spinner { width: 50px; height: 50px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; box-shadow: 0 0 20px rgba(255, 0, 85, 0.3);}
+        .spinner { width: 50px; height: 50px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite;}
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* --- INTRO ANIMATION --- */
-        #intro-overlay {
-            position: fixed; inset: 0; background: #000; z-index: 9998; /* Below loader */
-            display: flex; align-items: center; justify-content: center;
-            animation: fadeOutIntro 0.5s ease 3.0s forwards;
-            pointer-events: none;
-        }
-        .intro-letter {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 15rem; color: var(--primary);
-            transform: scale(1);
-            animation: netflixZoom 2.5s cubic-bezier(0.645, 0.045, 0.355, 1) forwards;
-            text-shadow: 0 0 20px rgba(229, 9, 20, 0.5);
-        }
-        @keyframes netflixZoom {
-            0% { transform: scale(1); opacity: 0; } 
-            20% { opacity: 1; transform: scale(1); } 
-            80% { opacity: 1; transform: scale(1.5); } 
-            100% { transform: scale(30); opacity: 0; }
-        }
+        /* --- INTRO --- */
+        #intro-overlay { position: fixed; inset: 0; background: #000; z-index: 9998; display: flex; align-items: center; justify-content: center; animation: fadeOutIntro 0.5s ease 2.5s forwards; pointer-events: none; }
+        .intro-letter { font-family: 'Bebas Neue', sans-serif; font-size: 15rem; color: var(--primary); transform: scale(1); animation: netflixZoom 2.5s cubic-bezier(0.645, 0.045, 0.355, 1) forwards; text-shadow: 0 0 20px rgba(229, 9, 20, 0.5); }
+        @keyframes netflixZoom { 0% { transform: scale(1); opacity: 0; } 20% { opacity: 1; transform: scale(1); } 80% { opacity: 1; transform: scale(1.5); } 100% { transform: scale(30); opacity: 0; } }
         @keyframes fadeOutIntro { to { opacity: 0; } }
 
-        /* --- VISIBILITY CLASSES --- */
+        /* --- VISIBILITY --- */
         .admin-only { display: none !important; }
-        body.is-admin .admin-only { display: flex !important; }
+        body.is-admin .admin-only { display: block !important; }
         #logout-btn { display: none; }
         body.is-admin #logout-btn { display: flex; }
         body.is-admin #login-btn { display: none; }
 
         /* --- NAVBAR --- */
-        header { 
-            position: fixed; top: 0; width: 100%; height: 75px; z-index: 2000; 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 0 5%; transition: 0.3s ease;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, transparent 100%);
-        }
-        header.scrolled { background: rgba(5, 5, 5, 0.9); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
-        
-        .logo { 
-            font-family: 'Bebas Neue', sans-serif; font-size: 34px; letter-spacing: 1px; cursor:pointer;
-            background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 10px rgba(255, 0, 85, 0.4));
-        }
-        
+        header { position: fixed; top: 0; width: 100%; height: 75px; z-index: 2000; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; transition: 0.3s ease; background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, transparent 100%); }
+        header.scrolled { background: rgba(5, 5, 5, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .logo { color: var(--primary); font-family: 'Bebas Neue', sans-serif; font-size: 34px; letter-spacing: 1px; cursor:pointer; background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px rgba(255, 0, 85, 0.4)); }
         .nav-actions { display: flex; align-items: center; gap: 15px; }
-        .nav-btn { 
-            width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
-            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
-            cursor: pointer; transition: 0.3s; backdrop-filter: blur(5px);
-        }
+        .nav-btn { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; backdrop-filter: blur(5px); }
         .nav-btn i { color: white; font-size: 18px; }
 
         /* --- HERO --- */
-        .hero { 
-            height: 75vh; width: 100%; position: relative; overflow: hidden;
-            display: flex; align-items: flex-end;
-        }
-        .hero-bg {
-            position: absolute; inset: 0; background-size: cover; background-position: center;
-            transition: opacity 1s ease; z-index: 1;
-        }
-        .hero-video-wrapper {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 0; pointer-events: none;
-        }
-        .hero-video {
-            width: 100vw; height: 56.25vw; min-height: 100vh; min-width: 177.77vh; 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            opacity: 0; transition: opacity 1.5s ease;
-        }
-        .hero::after { 
-            content:''; position: absolute; inset:0; z-index: 2;
-            background: linear-gradient(to top, var(--bg) 5%, transparent 60%),
-                        linear-gradient(to right, rgba(0,0,0,0.8) 0%, transparent 50%);
-        }
-        
+        .hero { height: 75vh; width: 100%; position: relative; overflow: hidden; display: flex; align-items: flex-end; }
+        .hero-bg { position: absolute; inset: 0; background-size: cover; background-position: center; transition: opacity 1s ease; z-index: 1; }
+        .hero-video-wrapper { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 0; pointer-events: none; }
+        .hero-video { width: 100vw; height: 56.25vw; min-height: 100vh; min-width: 177.77vh; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0; transition: opacity 1.5s ease; }
+        .hero::after { content:''; position: absolute; inset:0; z-index: 2; background: linear-gradient(to top, var(--bg) 5%, transparent 60%), linear-gradient(to right, rgba(0,0,0,0.8) 0%, transparent 50%); }
         .hero-content { position: relative; z-index: 10; padding: 0 5% 60px 5%; width: 100%; max-width: 900px; }
-        .hero-tag { 
-            font-size: 11px; font-weight: 800; letter-spacing: 2px; color: #fff; margin-bottom: 15px; 
-            display: inline-block; background: var(--gradient-main); 
-            padding: 6px 12px; border-radius: 20px; box-shadow: 0 5px 15px rgba(255,0,85,0.3);
-        }
+        .hero-tag { font-size: 11px; font-weight: 800; letter-spacing: 2px; color: #fff; margin-bottom: 15px; display: inline-block; background: var(--gradient-main); padding: 6px 12px; border-radius: 20px; box-shadow: 0 5px 15px rgba(255,0,85,0.3); }
         .hero-title { font-size: clamp(32px, 8vw, 70px); font-weight: 900; margin: 0 0 15px 0; line-height: 1.1; text-shadow: 0 5px 20px rgba(0,0,0,0.8); }
         .hero-desc { font-size: 15px; color: #ccc; max-width: 600px; line-height: 1.6; margin-bottom: 25px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
-        
-        .btn-play { 
-            padding: 14px 35px; background: white; color: black; border: none; font-weight: 800; border-radius: 30px; 
-            cursor: pointer; display: inline-flex; align-items: center; gap: 10px; font-size: 16px; 
-            transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 0 30px rgba(255,255,255,0.15);
-        }
+        .btn-play { padding: 14px 35px; background: white; color: black; border: none; font-weight: 800; border-radius: 30px; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; font-size: 16px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 0 30px rgba(255,255,255,0.15); }
+        .btn-play:hover { transform: scale(1.05); }
 
         /* --- SECTIONS --- */
         .section { padding: 0 5%; margin-bottom: 50px; position: relative; z-index: 20; }
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .section-title { font-size: 20px; font-weight: 700; color: white; display: flex; align-items: center; gap: 10px; }
         .section-title::before { content:''; width: 4px; height: 24px; background: var(--primary); border-radius: 2px; box-shadow: 0 0 10px var(--primary); }
-        
-        .h-list { display: flex; gap: 18px; overflow-x: auto; padding-bottom: 20px; min-height: 180px; align-items: center; scroll-behavior: smooth; }
+        .h-list { display: flex; gap: 18px; overflow-x: auto; padding-bottom: 20px; min-height: 180px; align-items: flex-start; scroll-behavior: smooth; }
         .v-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 18px; row-gap: 30px; }
-
-        .poster-card { position: relative; flex-shrink: 0; transition: 0.3s; cursor: pointer; width: 130px; }
-        .v-grid .poster-card { width: 100%; }
-        
-        .poster { 
-            width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 12px; 
-            background: var(--surface); box-shadow: 0 10px 20px rgba(0,0,0,0.3); 
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .poster-badge { 
-            position: absolute; top: 8px; left: 8px; 
-            background: var(--glass); backdrop-filter: blur(5px);
-            color: var(--primary); font-size: 9px; padding: 4px 8px; 
-            border-radius: 6px; font-weight: 800; border: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .delete-btn {
-            position: absolute; top: -8px; right: -8px; 
-            width: 28px; height: 28px; background: var(--primary); border: 2px solid #fff; 
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: 12px; z-index: 50; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
+        .poster-container { position: relative; flex-shrink: 0; transition: 0.3s; cursor: pointer; width: 130px; }
+        .v-grid .poster-container { width: 100%; }
+        .poster { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 12px; background: var(--surface); box-shadow: 0 10px 20px rgba(0,0,0,0.3); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); border: 1px solid rgba(255,255,255,0.1); overflow: hidden; }
+        .poster-container:hover .poster { transform: scale(1.05); border-color: var(--primary); }
+        .poster-badge { position: absolute; top: 8px; left: 8px; background: var(--glass); backdrop-filter: blur(5px); color: var(--primary); font-size: 9px; padding: 4px 8px; border-radius: 6px; font-weight: 800; border: 1px solid rgba(255,255,255,0.1); }
+        .poster-progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,0.3); border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; overflow: hidden; }
+        .poster-progress-bar { height: 100%; background: var(--primary); width: 0%; }
+        .delete-btn { position: absolute; top: -8px; right: -8px; width: 28px; height: 28px; background: var(--primary); border: 2px solid #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; z-index: 50; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
 
         /* --- MODALS --- */
         .modal { display: none; position: fixed; inset: 0; z-index: 5000; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; backdrop-filter: blur(15px); }
-        .modal-box { 
-            background: #141414; width: 100%; max-width: 500px; padding: 30px; 
-            border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); 
-            max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
+        .modal-box { background: #141414; width: 100%; max-width: 500px; padding: 30px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes slideUp { from { opacity:0; transform:translateY(50px); } to { opacity:1; transform:translateY(0); } }
-
-        input, select { 
-            width: 100%; padding: 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
-            color: white; border-radius: 12px; font-size: 16px; margin-bottom: 15px; outline: none; transition: 0.3s;
-        }
+        input, select { width: 100%; padding: 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 12px; font-size: 16px; margin-bottom: 15px; outline: none; transition: 0.3s; }
         input:focus { border-color: var(--primary); background: rgba(255,255,255,0.1); }
+        .btn-main { width: 100%; padding: 16px; background: var(--gradient-main); color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer; box-shadow: 0 10px 20px rgba(255, 0, 85, 0.3); transition: 0.3s; }
         
-        .btn-main { 
-            width: 100%; padding: 16px; background: var(--gradient-main); 
-            color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer; 
-            box-shadow: 0 10px 20px rgba(255, 0, 85, 0.3); transition: 0.3s;
-        }
+        /* STREAM SOURCES GRID */
+        .source-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+        .source-btn { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); color: #ccc; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 600; text-align: center; }
+        .source-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--primary); color: white; }
 
         /* --- SERIES VIEW --- */
         .series-view { position: fixed; inset: 0; background: var(--bg); z-index: 6000; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); overflow-y: auto; }
@@ -191,17 +115,17 @@
         .series-backdrop { height: 45vh; width: 100%; background-size: cover; background-position: center; position: relative; flex-shrink: 0; mask-image: linear-gradient(to bottom, var(--bg) 60%, transparent 100%); }
         .close-series { position: absolute; top: 20px; right: 20px; width: 44px; height: 44px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; cursor: pointer; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
         .series-content { padding: 0 25px 50px 25px; margin-top: -80px; position: relative; z-index: 2; }
-        .ep-card { 
-            display: flex; align-items: center; gap: 15px; padding: 15px; 
-            background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); 
-            margin-bottom: 10px; position: relative; transition: 0.2s;
-        }
+        .ep-card { display: flex; align-items: center; gap: 15px; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 10px; position: relative; transition: 0.2s; }
+        .ep-card:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.1); }
         .ep-delete { position: absolute; right: 10px; top: 10px; color: #666; font-size: 14px; padding: 10px; cursor: pointer; }
 
-        /* Responsive Series UI */
+        /* SERIES UI FIX */
+        .admin-panel { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin: 25px 0; border: 1px solid rgba(255,255,255,0.1); }
+        .add-ep-row { display: flex; gap: 10px; margin-bottom: 10px; }
         @media (max-width: 600px) {
-            .add-ep-row { flex-direction: column; gap: 10px; }
-            .add-ep-row select, .add-ep-row input, .add-ep-row button { width: 100% !important; flex: none; margin-bottom: 5px; }
+            .add-ep-row { flex-direction: column; gap: 0; }
+            .add-ep-row select, .add-ep-row input, .add-ep-row button { width: 100% !important; flex: none; margin-bottom: 10px; }
+            .source-grid { grid-template-columns: 1fr; }
         }
 
         /* --- PLAYER --- */
@@ -210,6 +134,9 @@
         video, iframe { width: 100%; height: 100%; border: none; }
         #player-toolbar { position: absolute; top: 25px; right: 25px; display: flex; align-items: center; gap: 20px; background: rgba(20,20,20,0.8); padding: 10px 20px; border-radius: 30px; backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); }
         #player-close { position: absolute; top: 25px; left: 25px; width: 45px; height: 45px; background: rgba(20,20,20,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); }
+        .tb-slider { width: 80px; -webkit-appearance: none; height: 4px; background: #666; border-radius: 2px; }
+        .tb-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: white; border-radius: 50%; cursor: pointer; }
+        #yt-fallback { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: #E50914; color: white; padding: 12px 25px; border-radius: 30px; font-weight: bold; cursor: pointer; display: none; box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 10005; border: 1px solid rgba(255,255,255,0.2); }
     </style>
 </head>
 <body>
@@ -220,10 +147,7 @@
 <header id="navbar">
     <div class="logo" onclick="window.scrollTo(0,0)">AMITFLIX</div>
     <div class="nav-actions">
-        <!-- ADMIN TOOLS -->
         <div class="nav-btn admin-only" onclick="openModal('add-modal')" title="Add Movie"><i class="fas fa-plus"></i></div>
-        
-        <!-- LOGIN / LOGOUT -->
         <div class="nav-btn" id="login-btn" onclick="openLoginModal()" title="Login"><i class="fas fa-user-lock"></i></div>
         <div class="nav-btn" id="logout-btn" onclick="firebaseLogout()" title="Logout"><i class="fas fa-sign-out-alt" style="color:var(--primary);"></i></div>
     </div>
@@ -232,7 +156,6 @@
 <div class="hero" id="hero">
     <div class="hero-bg" id="hero-bg"></div>
     <div class="hero-video-wrapper" id="hero-video-wrapper"></div>
-    
     <div class="hero-content">
         <span class="hero-tag" id="hero-tag">FEATURED</span>
         <h1 class="hero-title" id="hero-title">Welcome</h1>
@@ -241,17 +164,16 @@
     </div>
 </div>
 
-<!-- TRENDING (Admin Only) -->
-<div class="section admin-only" style="margin-top: -40px;">
+<!-- CONTINUE WATCHING -->
+<div class="section" id="continue-section" style="margin-top: -40px; display:none;">
     <div class="section-header">
-        <span class="section-title">🔥 Trending to Add</span>
-        <i class="fas fa-sync-alt" onclick="window.loadWebTrending()" style="color:#666; cursor:pointer;" title="Retry"></i>
+        <span class="section-title">📺 Continue Watching</span>
     </div>
-    <div class="h-list" id="web-trending"></div>
+    <div class="h-list" id="continue-list"></div>
 </div>
 
 <!-- COLLECTION -->
-<div class="section">
+<div class="section" id="main-collection">
     <div class="section-header">
         <span class="section-title">📂 My Collection</span>
         <i class="fas fa-sync-alt" onclick="loadLib()" style="color:#aaa; cursor:pointer;"></i>
@@ -290,7 +212,13 @@
             <div id="movie-options">
                 <input id="vid-link" placeholder="Paste Link (MP4/Drive)">
                 <div style="text-align:center; margin-bottom:15px;">
-                    <button class="btn-main" style="background:#222; font-size:12px; padding:10px;" onclick="searchSources()">🔍 Find Free Streams</button>
+                    <button class="btn-main" style="background:#222; font-size:12px; padding:10px;" onclick="toggleSourceList('movie-source-list')">🔍 Find Free Streams</button>
+                </div>
+                <div id="movie-source-list" class="source-grid" style="display:none;">
+                    <div class="source-btn" onclick="openSourceSearch('yt')"><i class="fab fa-youtube" style="color:red;"></i> YouTube</div>
+                    <div class="source-btn" onclick="openSourceSearch('archive')"><i class="fas fa-landmark" style="color:gold;"></i> Archive</div>
+                    <div class="source-btn" onclick="openSourceSearch('google')"><i class="fab fa-google" style="color:white;"></i> Google</div>
+                    <div class="source-btn" onclick="openSourceSearch('bing')"><i class="fas fa-search" style="color:skyblue;"></i> Bing</div>
                 </div>
             </div>
             <div id="series-msg" style="display:none; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; font-size:13px; color:#ccc;">Creates a Series Folder.</div>
@@ -309,14 +237,24 @@
         <h1 class="series-title" id="s-title">Title</h1>
         <p id="s-desc" style="color:#aaa; line-height:1.5; font-size:14px;">...</p>
         
-        <div class="admin-only" style="background:rgba(255,255,255,0.05); padding:20px; border-radius:16px; margin:25px 0;">
+        <div class="admin-only admin-panel">
             <h4 style="margin:0 0 15px 0;">Add Episode</h4>
-            <div class="add-ep-row" style="display:flex; gap:10px;">
-                <select id="s-season" onchange="fetchTMDbEpisodes()"></select>
-                <select id="s-ep"><option>Ep...</option></select>
+            <div class="add-ep-row">
+                <select id="s-season" onchange="fetchTMDbEpisodes()" style="flex:1"></select>
+                <select id="s-ep" onchange="revealEpTools()" style="flex:2"><option>Select Ep...</option></select>
             </div>
-            <input id="s-link" placeholder="Paste Link">
-            <button class="btn-main" onclick="saveEp()">Add</button>
+            
+            <!-- SMART EPISODE TOOLS -->
+            <div id="ep-tools" style="display:none; animation: slideDown 0.3s;">
+                <div class="add-ep-row">
+                    <button class="btn-main" style="background:#222; font-size:12px; padding:10px; flex:1;" onclick="searchSeriesSources('yt')"><i class="fab fa-youtube"></i> Find on YT</button>
+                    <button class="btn-main" style="background:#222; font-size:12px; padding:10px; flex:1;" onclick="searchSeriesSources('google')"><i class="fab fa-google"></i> Find on Web</button>
+                </div>
+                <div class="add-ep-row" style="margin-top:10px;">
+                    <input id="s-link" placeholder="Paste Link" style="flex:1; margin-bottom:0;">
+                    <button class="btn-main" onclick="saveEp()" style="width:auto; padding:0 30px;">Add</button>
+                </div>
+            </div>
         </div>
         
         <h3 style="margin-bottom:15px;">Episodes</h3>
@@ -328,6 +266,7 @@
 <div id="player">
     <div id="player-close" onclick="closePlayer()"><i class="fas fa-arrow-left"></i></div>
     <div id="vid-con"></div>
+    <div id="yt-fallback" onclick="openYouTube()"><i class="fab fa-youtube"></i> Watch on YouTube App</div>
     <div id="player-toolbar">
         <i class="fas fa-sun" style="color:white; font-size:14px;"></i>
         <input type="range" min="0.3" max="1.5" step="0.1" value="1" oninput="setBrightness(this.value)" style="width:80px; margin:0;">
@@ -341,11 +280,9 @@
     import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-    // API KEYS
     const OMDB_KEY = "496d1395"; 
     const TMDB_KEY = "3fd2be6f0c70a2a598f084ddfb75487c";
-    
-    let db, storage, moviesCol, auth, activeSeriesID, activeTmdbID, allMovies=[], tempItem=null;
+    let db, storage, moviesCol, auth, activeSeriesID, activeTmdbID, activeSeriesTitle="", allMovies=[], tempItem=null, currentYtLink="";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBDZyw3vWpTuo3wKBFCtqqlbQfx1jHHqmc",
@@ -363,7 +300,6 @@
         storage = getStorage(app);
         moviesCol = collection(db, "movies");
         
-        // AUTH STATE LISTENER
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.body.classList.add("is-admin");
@@ -373,26 +309,54 @@
         });
 
         loadLib();
-        loadWebTrending();
-        setTimeout(() => document.getElementById("app-loader")?.remove(), 3500);
+        setTimeout(() => document.getElementById("app-loader")?.remove(), 2500);
     } catch(e) { console.error(e); }
 
     // --- AUTH UI ---
     window.openLoginModal = () => window.openModal('login-modal');
-    
     window.firebaseLogin = async () => {
         try {
-            const email = document.getElementById("email-input").value;
-            const pass = document.getElementById("password-input").value;
-            await signInWithEmailAndPassword(auth, email, pass);
+            await signInWithEmailAndPassword(auth, document.getElementById("email-input").value, document.getElementById("password-input").value);
             window.closeModal('login-modal');
             alert("Admin Access Granted.");
         } catch(e) { alert("Error: " + e.message); }
     }
+    window.firebaseLogout = async () => { await signOut(auth); alert("Logged Out."); }
 
-    window.firebaseLogout = async () => {
-        await signOut(auth);
-        alert("Logged Out.");
+    // --- CONTINUE WATCHING ---
+    function updateContinueWatching() {
+        const list = document.getElementById("continue-list");
+        const sec = document.getElementById("continue-section");
+        const main = document.getElementById("main-collection");
+        
+        let watching = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if(key.startsWith('watch_progress_')) {
+                const data = JSON.parse(localStorage.getItem(key));
+                if(data.pct > 5 && data.pct < 95) watching.push(data);
+            }
+        }
+
+        if(watching.length === 0) { 
+            sec.style.display='none'; 
+            main.style.marginTop = '-40px'; 
+            return; 
+        }
+        
+        sec.style.display='block';
+        main.style.marginTop = '0px';
+        list.innerHTML = "";
+        
+        watching.forEach(item => {
+            const d = document.createElement("div"); d.className = "poster-container";
+            d.style.width="130px";
+            d.innerHTML = `
+                <img src="${item.poster}" class="poster" onclick="play('${item.link}', null, '${item.id}')">
+                <div class="poster-progress"><div class="poster-progress-bar" style="width:${item.pct}%"></div></div>
+            `;
+            list.appendChild(d);
+        });
     }
 
     // --- HERO & TRAILER LOGIC ---
@@ -409,17 +373,16 @@
             if(r.type==='movie' && r.link) {
                 const b = document.getElementById("hero-play");
                 b.style.display = 'inline-flex';
-                b.onclick = () => window.play(r.link);
+                b.onclick = () => window.play(r.link, r.title, r.id, r.poster);
             }
 
-            // Attempt to Fetch Trailer
             let tmdbId = r.tmdbID;
             if (!tmdbId && r.imdbID) {
                  try {
                     const findRes = await fetch(`https://api.themoviedb.org/3/find/${r.imdbID}?api_key=${TMDB_KEY}&external_source=imdb_id`);
                     const findData = await findRes.json();
-                    if (findData.movie_results && findData.movie_results.length > 0) tmdbId = findData.movie_results[0].id;
-                    else if (findData.tv_results && findData.tv_results.length > 0) tmdbId = findData.tv_results[0].id;
+                    if (findData.movie_results.length > 0) tmdbId = findData.movie_results[0].id;
+                    else if (findData.tv_results.length > 0) tmdbId = findData.tv_results[0].id;
                  } catch(e) {}
             }
 
@@ -451,9 +414,9 @@
 
         snap.forEach(docSnap => {
             const m = docSnap.data(); m.id = docSnap.id; allMovies.push(m);
-            const d = document.createElement("div"); d.className = "poster-card";
+            const d = document.createElement("div"); d.className = "poster-container";
             const badge = m.type === 'series' ? 'SERIES' : 'MOVIE';
-            const action = m.type === 'series' ? `openSeriesView('${m.id}', '${m.tmdbID}')` : `play('${m.link}')`;
+            const action = m.type === 'series' ? `openSeriesView('${m.id}', '${m.tmdbID}')` : `play('${m.link}', '${m.title}', '${m.id}', '${m.poster}')`;
             
             d.innerHTML = `
                 <div class="poster-badge">${badge}</div>
@@ -465,34 +428,7 @@
             grid.appendChild(d);
         });
         setupHero();
-    }
-
-    // --- TRENDING ---
-    async function loadWebTrending() {
-        const list = document.getElementById("web-trending");
-        const targetUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_KEY}&with_genres=878,28&sort_by=popularity.desc`;
-        const proxies = [ url => `https://corsproxy.io/?${encodeURIComponent(url)}`, url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}` ];
-
-        let data = null;
-        for (const proxy of proxies) { try { const res = await fetch(proxy(targetUrl)); if (res.ok) { data = await res.json(); break; } } catch(e){} }
-        if (!data || !data.results) { list.innerHTML = `<div style="text-align:center; padding:20px; color:#666; font-size:12px;">Failed to load.</div>`; return; }
-        
-        list.innerHTML = "";
-        data.results.slice(0, 10).forEach(m => {
-            const d = document.createElement("div"); d.className = "poster-card";
-            const safeTitle = m.title.replace(/'/g, "");
-            const safeOverview = m.overview.replace(/'/g, "").replace(/"/g, "");
-            d.innerHTML = `<div class="poster-badge" style="background:#E50914;">HOT</div><img src="https://image.tmdb.org/t/p/w200${m.poster_path}" class="poster" onclick="openAddFromTrending('${m.id}', '${safeTitle}', '${m.poster_path}', '${m.backdrop_path}', '${safeOverview}')">`;
-            list.appendChild(d);
-        });
-    }
-
-    window.openAddFromTrending = (id, title, poster, backdrop, overview) => {
-        tempItem = { title, poster: `https://image.tmdb.org/t/p/w500${poster}`, backdrop: `https://image.tmdb.org/t/p/original${backdrop}`, overview, type: 'movie' };
-        document.getElementById("add-type").value = "movie"; document.getElementById("sel-title").innerText = title;
-        document.getElementById("add-search-ui").style.display = "none"; document.getElementById("search-res").innerHTML = "";
-        document.getElementById("step-2").style.display = "block"; document.getElementById("movie-options").style.display = "block"; document.getElementById("series-msg").style.display = "none";
-        window.openModal('add-modal');
+        updateContinueWatching();
     }
 
     // --- SEARCH & ADD ---
@@ -542,11 +478,24 @@
     }
 
     // --- SMART DISCOVERY ---
-    window.searchSources = () => {
+    window.toggleSourceList = (id) => {
+        const list = document.getElementById(id);
+        list.style.display = list.style.display === "grid" ? "none" : "grid";
+    }
+
+    window.openSourceSearch = (platform) => {
         const title = document.getElementById("sel-title").innerText;
-        if(!title) return;
         window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(title + " full movie")}`, '_blank');
         window.open(`https://archive.org/search.php?query=${encodeURIComponent(title)}`, '_blank');
+    }
+    
+    window.searchSeriesSources = (platform) => {
+        const season = document.getElementById("s-season").value;
+        const episode = document.getElementById("s-ep").options[document.getElementById("s-ep").selectedIndex].text;
+        const query = `${activeSeriesTitle} Season ${season} ${episode}`;
+        
+        if (platform === 'yt') window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, '_blank');
+        else window.open(`https://www.google.com/search?q=${encodeURIComponent(query + " watch online free")}`, '_blank');
     }
 
     window.resetAddModal = () => { document.getElementById("step-2").style.display="none"; document.getElementById("add-search-ui").style.display="flex"; document.getElementById("vid-link").value = ""; }
@@ -557,39 +506,100 @@
     window.openSeriesView=async(id,tmdb)=>{
         activeSeriesID=id; activeTmdbID=tmdb;
         const docRef=doc(db,"movies",id); const docSnap=await getDoc(docRef); const d=docSnap.data();
+        activeSeriesTitle = d.title;
         document.getElementById("s-backdrop").style.backgroundImage = `url('${d.backdrop}')`; document.getElementById("s-title").innerText = d.title; document.getElementById("s-desc").innerText = d.overview;
         const sel=document.getElementById("s-season"); sel.innerHTML="<option>Season...</option>"; for(let i=1; i<=d.totalSeasons; i++) sel.innerHTML+=`<option value="${i}">Season ${i}</option>`;
         loadDbEps(); document.getElementById("series-view").classList.add("active");
+        
+        // Reset state
+        document.getElementById("ep-tools").style.display="none";
     }
     window.closeSeriesView=()=>{ document.getElementById("series-view").classList.remove("active"); }
+
     window.fetchTMDbEpisodes=async()=>{ const s=document.getElementById("s-season").value; const epSel=document.getElementById("s-ep"); try { const proxy=`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://api.themoviedb.org/3/tv/${activeTmdbID}/season/${s}?api_key=${TMDB_KEY}`)}`; const r=await fetch(proxy); const d=await r.json(); epSel.innerHTML="<option>Ep...</option>"; d.episodes.forEach(e=>epSel.innerHTML+=`<option value="${e.episode_number}|${e.name}">Ep ${e.episode_number}</option>`); } catch(e){} }
+    
+    window.revealEpTools = () => { document.getElementById("ep-tools").style.display = "block"; }
+
     window.saveEp = async () => { const s=document.getElementById("s-season").value; const val=document.getElementById("s-ep").value; const link=document.getElementById("s-link").value; if(!link||val.includes("Ep...")) return; const [num,title]=val.split("|"); const epCol = collection(db, "movies", activeSeriesID, "episodes"); await addDoc(epCol, { season:parseInt(s), episode:parseInt(num), title:title, link:link }); document.getElementById("s-link").value=""; loadDbEps(); }
-    async function loadDbEps() { const div=document.getElementById("ep-list"); div.innerHTML="Loading..."; const epCol = collection(db, "movies", activeSeriesID, "episodes"); const snap = await getDocs(epCol); div.innerHTML=""; let eps=[]; snap.forEach(d=>eps.push({id:d.id,...d.data()})); eps.sort((a,b)=>(a.season-b.season)||(a.episode-b.episode)); eps.forEach(e=>{ div.innerHTML+=`<div class="ep-card" onclick="play('${e.link}')"><div style="flex:1;"><div style="font-size:15px; font-weight:600;">${e.episode}. ${e.title}</div><div style="font-size:12px;color:#888;">Season ${e.season}</div></div><i class="fas fa-trash admin-only ep-delete" onclick="delEp('${e.id}', event)"></i></div>`; }); }
+    async function loadDbEps() { const div=document.getElementById("ep-list"); div.innerHTML="Loading..."; const epCol = collection(db, "movies", activeSeriesID, "episodes"); const snap = await getDocs(epCol); div.innerHTML=""; let eps=[]; snap.forEach(d=>eps.push({id:d.id,...d.data()})); eps.sort((a,b)=>(a.season-b.season)||(a.episode-b.episode)); eps.forEach(e=>{ div.innerHTML+=`<div class="ep-card" onclick="play('${e.link}', null, '${activeSeriesID}_${e.id}', 'https://via.placeholder.com/150')"><div style="flex:1;"><div style="font-size:15px; font-weight:600;">${e.episode}. ${e.title}</div><div style="font-size:12px;color:#888;">Season ${e.season}</div></div><i class="fas fa-trash admin-only ep-delete" onclick="delEp('${e.id}', event)"></i></div>`; }); 
+    // Re-apply admin visibility
+    if(document.body.classList.contains('is-admin')) document.querySelectorAll('.admin-only').forEach(el=>el.style.display='block');
+    }
 
     // --- PLAYER ---
     let isFit = false;
-    window.play = (url) => {
+    window.openYouTube = () => { if(currentYtLink) window.open(currentYtLink, '_blank'); }
+
+    window.play = (url, title, id, poster) => {
         const p = document.getElementById("player"); const con = document.getElementById("vid-con");
-        p.style.display = "block"; con.innerHTML = "";
+        const fb = document.getElementById("yt-fallback");
+        p.style.display = "block"; con.innerHTML = ""; fb.style.display = "none";
         
-        if(url.includes("youtu") || url.includes("drive.google")) {
-            let src = url.includes("youtu") ? `https://www.youtube.com/embed/${url.split("v=")[1].split("&")[0]}?autoplay=1` : url.replace("/view", "/preview");
-            con.innerHTML = `<iframe src="${src}" allowfullscreen style="width:100%; height:100%"></iframe>`;
+        let startTime = 0;
+        if(id) { const saved = localStorage.getItem('watch_progress_' + id); if(saved) startTime = JSON.parse(saved).time; }
+
+        // CHECK ARCHIVE.ORG
+        if(url.includes("archive.org")) {
+             let src = url.includes("/details/") ? url.replace("/details/", "/embed/") : url;
+             con.innerHTML = `<iframe src="${src}?autoplay=1" allowfullscreen style="width:100%; height:100%" frameborder="0"></iframe>`;
+             document.getElementById("player-toolbar").style.display = 'none';
+        }
+        // CHECK YOUTUBE
+        else if(url.match(/(?:youtube\.com|youtu\.be)/)) {
+            const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+            if(ytMatch) {
+                currentYtLink = url;
+                let player;
+                window.onYouTubeIframeAPIReady = function() {
+                  player = new YT.Player('vid-con', {
+                    height: '100%', width: '100%', videoId: ytMatch[1],
+                    playerVars: { 'autoplay': 1, 'controls': 1 },
+                    events: { 'onError': onPlayerError }
+                  });
+                };
+                if (!window.YT) {
+                    var tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api";
+                    var firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+                } else { onYouTubeIframeAPIReady(); }
+                document.getElementById("player-toolbar").style.display = 'none';
+            }
+        } 
+        else if(url.includes("drive.google")) {
+            con.innerHTML = `<iframe src="${url.replace("/view", "/preview")}" allowfullscreen style="width:100%; height:100%"></iframe>`;
             document.getElementById("player-toolbar").style.display = 'none';
-        } else {
+        } 
+        else {
             document.getElementById("player-toolbar").style.display = 'flex';
             const v = document.createElement("video"); v.autoplay = true; v.controls = true; v.style.width="100%"; v.style.height="100%";
             if(url.includes(".m3u8") && Hls.isSupported()) { const h = new Hls(); h.loadSource(url); h.attachMedia(v); } else { v.src = url; }
+            v.currentTime = startTime;
+            v.addEventListener('timeupdate', () => {
+                if(id && v.duration > 0) {
+                    const pct = (v.currentTime / v.duration) * 100;
+                    localStorage.setItem('watch_progress_' + id, JSON.stringify({ time: v.currentTime, pct: pct, id: id, link: url, poster: poster }));
+                }
+            });
             con.appendChild(v);
         }
     }
 
+    function onPlayerError(event) {
+        if(event.data === 150 || event.data === 101) {
+            document.getElementById("yt-fallback").style.display = "block";
+            document.getElementById("vid-con").innerHTML = `<div style="color:#aaa; text-align:center;">Video Restricted.<br>Use the button below.</div>`;
+        }
+    }
+
+    // --- UTILS & AUTH UI ---
     window.setBrightness=(v)=>{ const el=document.querySelector("video, iframe"); if(el) el.style.filter=`brightness(${v})`; }
     window.toggleFit=()=>{ const v=document.querySelector("video"); if(v){ isFit=!isFit; v.style.objectFit = isFit ? "cover" : "contain"; } }
-    window.closePlayer=()=>{ document.getElementById("player").style.display="none"; document.getElementById("vid-con").innerHTML=""; }
+    window.closePlayer=()=>{ document.getElementById("player").style.display="none"; document.getElementById("vid-con").innerHTML=""; updateContinueWatching(); }
 
     window.openModal=(id)=>{document.getElementById(id).style.display="flex"; setTimeout(()=>document.getElementById(id).classList.add('active'),10);}
     window.closeModal=(id)=>{document.getElementById(id).classList.remove('active'); setTimeout(()=>document.getElementById(id).style.display="none",300);}
+    window.openLoginModal = () => window.openModal('login-modal');
+    window.firebaseLogin = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById("email-input").value, document.getElementById("password-input").value); window.closeModal('login-modal'); alert("Admin Access Granted."); } catch(e) { alert("Error: " + e.message); } }
+    window.firebaseLogout = async () => { await signOut(auth); alert("Logged Out."); }
     window.deleteContent = async (id, e) => { if(e) e.stopPropagation(); if(confirm("Delete?")) { await deleteDoc(doc(db, "movies", id)); loadLib(); } };
     window.delEp = async (id, e) => { if(e) e.stopPropagation(); if(confirm("Delete?")) { await deleteDoc(doc(db, "movies", activeSeriesID, "episodes", id)); loadDbEps(); } };
     window.addEventListener("scroll",()=>document.getElementById("navbar").classList.toggle("scrolled",window.scrollY>50));
