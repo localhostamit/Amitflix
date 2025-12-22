@@ -8,9 +8,11 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#050505">
     
+    <!-- FONTS & ICONS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
     
+    <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -91,22 +93,23 @@
         .poster-progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,0.3); border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; overflow: hidden; }
         .poster-progress-bar { height: 100%; background: var(--primary); width: 0%; }
         
-        /* FIXED DELETE BTN FOR MOVIES */
+        /* CLEAN DELETE BTN (Fixed Alignment) */
         .delete-btn { 
-            position: absolute; top: 5px; right: 5px; 
+            position: absolute; top: 6px; right: 6px; 
             width: 28px; height: 28px; 
-            background: #E50914; border: 2px solid white; 
+            background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.3); 
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 12px; z-index: 100; cursor: pointer; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            color: #fff; font-size: 12px; z-index: 50; cursor: pointer; 
+            backdrop-filter: blur(4px); transition: 0.2s;
         }
+        .delete-btn:hover { background: #FF0055; border-color: #FF0055; transform: scale(1.1); }
 
         /* --- MODALS --- */
         .modal { display: none; position: fixed; inset: 0; z-index: 5000; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; backdrop-filter: blur(15px); }
         .modal-box { background: #141414; width: 100%; max-width: 500px; padding: 30px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes slideUp { from { opacity:0; transform:translateY(50px); } to { opacity:1; transform:translateY(0); } }
-        input, select { width: 100%; padding: 16px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 12px; font-size: 16px; margin-bottom: 15px; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--primary); background: rgba(255,255,255,0.15); }
+        input, select { width: 100%; padding: 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 12px; font-size: 16px; margin-bottom: 15px; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--primary); background: rgba(255,255,255,0.1); }
         .btn-main { width: 100%; padding: 16px; background: var(--gradient-main); color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer; box-shadow: 0 10px 20px rgba(255, 0, 85, 0.3); transition: 0.3s; }
         
         /* STREAM SOURCES GRID */
@@ -121,24 +124,25 @@
         .close-series { position: absolute; top: 20px; right: 20px; width: 44px; height: 44px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; cursor: pointer; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
         .series-content { padding: 0 25px 50px 25px; margin-top: -80px; position: relative; z-index: 2; }
         
-        /* FIXED EPISODE CARD LAYOUT */
+        /* EPISODE CARD (Flex Alignment Fix) */
         .ep-card { 
-            display: flex; align-items: center; justify-content: space-between; 
+            display: flex; align-items: center; justify-content: space-between;
             padding: 15px; background: rgba(255,255,255,0.03); 
             border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); 
             margin-bottom: 10px; position: relative; transition: 0.2s;
         }
         .ep-card:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.1); }
-        .ep-info { flex: 1; padding-right: 10px; }
+        .ep-info { flex: 1; padding-right: 15px; } /* Space for delete btn */
+        
+        /* Episode Delete Button (Aligned Properly) */
         .ep-delete { 
-            flex-shrink: 0; width: 30px; height: 30px; 
-            background: rgba(255,255,255,0.1); border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            color: #aaa; cursor: pointer;
+            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+            color: #666; font-size: 14px; cursor: pointer; border-radius: 50%;
+            transition: 0.2s; background: rgba(255,255,255,0.05);
         }
-        .ep-delete:hover { background: #E50914; color: white; }
+        .ep-delete:hover { color: #fff; background: var(--primary); }
 
-        /* SERIES ADMIN PANEL */
+        /* SERIES UI FIX - NO GLITCH */
         .admin-panel { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin: 25px 0; border: 1px solid rgba(255,255,255,0.1); }
         .add-ep-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; margin-bottom: 10px; }
         .add-ep-actions { display: flex; gap: 10px; }
@@ -167,7 +171,10 @@
 <header id="navbar">
     <div class="logo" onclick="window.scrollTo(0,0)">AMITFLIX</div>
     <div class="nav-actions">
+        <!-- ADMIN TOOLS -->
         <div class="nav-btn admin-only" onclick="openModal('add-modal')" title="Add Movie"><i class="fas fa-plus"></i></div>
+        
+        <!-- LOGIN / LOGOUT -->
         <div class="nav-btn" id="login-btn" onclick="openLoginModal()" title="Login"><i class="fas fa-user-lock"></i></div>
         <div class="nav-btn" id="logout-btn" onclick="firebaseLogout()" title="Logout"><i class="fas fa-sign-out-alt" style="color:var(--primary);"></i></div>
     </div>
@@ -176,6 +183,7 @@
 <div class="hero" id="hero">
     <div class="hero-bg" id="hero-bg"></div>
     <div class="hero-video-wrapper" id="hero-video-wrapper"></div>
+    
     <div class="hero-content">
         <span class="hero-tag" id="hero-tag">FEATURED</span>
         <h1 class="hero-title" id="hero-title">Welcome</h1>
@@ -184,6 +192,7 @@
     </div>
 </div>
 
+<!-- CONTINUE WATCHING -->
 <div class="section" id="continue-section" style="margin-top: -40px; display:none;">
     <div class="section-header">
         <span class="section-title">📺 Continue Watching</span>
@@ -191,6 +200,7 @@
     <div class="h-list" id="continue-list"></div>
 </div>
 
+<!-- COLLECTION -->
 <div class="section" id="main-collection">
     <div class="section-header">
         <span class="section-title">📂 My Collection</span>
@@ -200,6 +210,7 @@
     <div id="empty-state" style="text-align:center; padding: 40px; color:#666; display:none;">No content added.</div>
 </div>
 
+<!-- LOGIN MODAL -->
 <div id="login-modal" class="modal">
     <div class="modal-box" style="text-align:center; max-width:350px;">
         <h2 style="margin-top:0; background:var(--gradient-main); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Admin Access</h2>
@@ -210,6 +221,7 @@
     </div>
 </div>
 
+<!-- ADD MODAL -->
 <div id="add-modal" class="modal">
     <div class="modal-box">
         <h2 style="margin-top:0;">Add Content</h2>
@@ -245,6 +257,7 @@
     </div>
 </div>
 
+<!-- SERIES VIEW -->
 <div id="series-view" class="series-view">
     <div class="series-backdrop" id="s-backdrop"><div class="close-series" onclick="closeSeriesView()"><i class="fas fa-chevron-down"></i></div></div>
     <div class="series-content">
@@ -254,11 +267,13 @@
         <div class="admin-only admin-panel">
             <h4 style="margin:0 0 15px 0;">Add Episode</h4>
             
+            <!-- STABLE GRID LAYOUT -->
             <div class="add-ep-grid">
                 <select id="s-season" onchange="fetchTMDbEpisodes()" style="flex:1"></select>
                 <select id="s-ep" style="flex:2"><option>Ep...</option></select>
             </div>
             
+            <!-- SMART SERIES SOURCE SELECTOR -->
             <div style="text-align:center; margin-bottom:10px;">
                 <button class="btn-main" style="background:#222; font-size:12px; padding:10px; width:100%;" onclick="toggleSourceList('series-source-list')">🔍 Find Stream</button>
             </div>
@@ -280,6 +295,7 @@
     </div>
 </div>
 
+<!-- PLAYER -->
 <div id="player">
     <div id="player-close" onclick="closePlayer()"><i class="fas fa-arrow-left"></i></div>
     <div id="vid-con"></div>
@@ -512,8 +528,7 @@
     window.searchSeriesSources = (platform) => {
         const season = document.getElementById("s-season").value;
         const episode = document.getElementById("s-ep").options[document.getElementById("s-ep").selectedIndex].text;
-        
-        if (!activeSeriesTitle) return alert("Series Title Missing");
+        if(!activeSeriesTitle) return;
         
         const query = `${activeSeriesTitle} Season ${season} ${episode}`;
         let url = "";
@@ -627,4 +642,3 @@
 </script>
 </body>
 </html>
-```eof
