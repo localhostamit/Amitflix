@@ -8,11 +8,9 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#050505">
     
-    <!-- FONTS & ICONS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
     
-    <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -62,8 +60,7 @@
         header.scrolled { background: rgba(5, 5, 5, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
         .logo { color: var(--primary); font-family: 'Bebas Neue', sans-serif; font-size: 34px; letter-spacing: 1px; cursor:pointer; background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px rgba(255, 0, 85, 0.4)); }
         .nav-actions { display: flex; align-items: center; gap: 15px; }
-        .nav-btn { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; backdrop-filter: blur(5px); }
-        .nav-btn:active { transform: scale(0.95); background: var(--primary); }
+        .nav-btn { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; backdrop-filter: blur(5px); }
         .nav-btn i { color: white; font-size: 18px; }
 
         /* --- HERO --- */
@@ -94,23 +91,22 @@
         .poster-progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,0.3); border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; overflow: hidden; }
         .poster-progress-bar { height: 100%; background: var(--primary); width: 0%; }
         
-        /* CLEAN DELETE BTN (Fixed Position) */
+        /* FIXED DELETE BTN FOR MOVIES */
         .delete-btn { 
             position: absolute; top: 5px; right: 5px; 
-            width: 32px; height: 32px; 
-            background: rgba(229, 9, 20, 0.9); border: 1px solid rgba(255,255,255,0.5); 
+            width: 28px; height: 28px; 
+            background: #E50914; border: 2px solid white; 
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: 14px; z-index: 50; cursor: pointer; 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.8); transition: 0.2s;
+            color: white; font-size: 12px; z-index: 100; cursor: pointer; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
-        .delete-btn:hover { transform: scale(1.1); background: red; }
 
         /* --- MODALS --- */
         .modal { display: none; position: fixed; inset: 0; z-index: 5000; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; backdrop-filter: blur(15px); }
         .modal-box { background: #141414; width: 100%; max-width: 500px; padding: 30px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes slideUp { from { opacity:0; transform:translateY(50px); } to { opacity:1; transform:translateY(0); } }
-        input, select { width: 100%; padding: 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 12px; font-size: 16px; margin-bottom: 15px; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--primary); background: rgba(255,255,255,0.1); }
+        input, select { width: 100%; padding: 16px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 12px; font-size: 16px; margin-bottom: 15px; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--primary); background: rgba(255,255,255,0.15); }
         .btn-main { width: 100%; padding: 16px; background: var(--gradient-main); color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer; box-shadow: 0 10px 20px rgba(255, 0, 85, 0.3); transition: 0.3s; }
         
         /* STREAM SOURCES GRID */
@@ -124,11 +120,25 @@
         .series-backdrop { height: 45vh; width: 100%; background-size: cover; background-position: center; position: relative; flex-shrink: 0; mask-image: linear-gradient(to bottom, var(--bg) 60%, transparent 100%); }
         .close-series { position: absolute; top: 20px; right: 20px; width: 44px; height: 44px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; cursor: pointer; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
         .series-content { padding: 0 25px 50px 25px; margin-top: -80px; position: relative; z-index: 2; }
-        .ep-card { display: flex; align-items: center; gap: 15px; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 10px; position: relative; transition: 0.2s; }
+        
+        /* FIXED EPISODE CARD LAYOUT */
+        .ep-card { 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 15px; background: rgba(255,255,255,0.03); 
+            border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); 
+            margin-bottom: 10px; position: relative; transition: 0.2s;
+        }
         .ep-card:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.1); }
-        .ep-delete { position: absolute; right: 10px; top: 10px; color: #666; font-size: 14px; padding: 10px; cursor: pointer; }
+        .ep-info { flex: 1; padding-right: 10px; }
+        .ep-delete { 
+            flex-shrink: 0; width: 30px; height: 30px; 
+            background: rgba(255,255,255,0.1); border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            color: #aaa; cursor: pointer;
+        }
+        .ep-delete:hover { background: #E50914; color: white; }
 
-        /* SERIES UI FIX - NO GLITCH */
+        /* SERIES ADMIN PANEL */
         .admin-panel { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin: 25px 0; border: 1px solid rgba(255,255,255,0.1); }
         .add-ep-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; margin-bottom: 10px; }
         .add-ep-actions { display: flex; gap: 10px; }
@@ -157,10 +167,7 @@
 <header id="navbar">
     <div class="logo" onclick="window.scrollTo(0,0)">AMITFLIX</div>
     <div class="nav-actions">
-        <!-- ADMIN TOOLS -->
         <div class="nav-btn admin-only" onclick="openModal('add-modal')" title="Add Movie"><i class="fas fa-plus"></i></div>
-        
-        <!-- LOGIN / LOGOUT -->
         <div class="nav-btn" id="login-btn" onclick="openLoginModal()" title="Login"><i class="fas fa-user-lock"></i></div>
         <div class="nav-btn" id="logout-btn" onclick="firebaseLogout()" title="Logout"><i class="fas fa-sign-out-alt" style="color:var(--primary);"></i></div>
     </div>
@@ -169,7 +176,6 @@
 <div class="hero" id="hero">
     <div class="hero-bg" id="hero-bg"></div>
     <div class="hero-video-wrapper" id="hero-video-wrapper"></div>
-    
     <div class="hero-content">
         <span class="hero-tag" id="hero-tag">FEATURED</span>
         <h1 class="hero-title" id="hero-title">Welcome</h1>
@@ -178,7 +184,6 @@
     </div>
 </div>
 
-<!-- CONTINUE WATCHING -->
 <div class="section" id="continue-section" style="margin-top: -40px; display:none;">
     <div class="section-header">
         <span class="section-title">📺 Continue Watching</span>
@@ -186,7 +191,6 @@
     <div class="h-list" id="continue-list"></div>
 </div>
 
-<!-- COLLECTION -->
 <div class="section" id="main-collection">
     <div class="section-header">
         <span class="section-title">📂 My Collection</span>
@@ -196,7 +200,6 @@
     <div id="empty-state" style="text-align:center; padding: 40px; color:#666; display:none;">No content added.</div>
 </div>
 
-<!-- LOGIN MODAL -->
 <div id="login-modal" class="modal">
     <div class="modal-box" style="text-align:center; max-width:350px;">
         <h2 style="margin-top:0; background:var(--gradient-main); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Admin Access</h2>
@@ -207,7 +210,6 @@
     </div>
 </div>
 
-<!-- ADD MODAL -->
 <div id="add-modal" class="modal">
     <div class="modal-box">
         <h2 style="margin-top:0;">Add Content</h2>
@@ -243,7 +245,6 @@
     </div>
 </div>
 
-<!-- SERIES VIEW -->
 <div id="series-view" class="series-view">
     <div class="series-backdrop" id="s-backdrop"><div class="close-series" onclick="closeSeriesView()"><i class="fas fa-chevron-down"></i></div></div>
     <div class="series-content">
@@ -253,21 +254,19 @@
         <div class="admin-only admin-panel">
             <h4 style="margin:0 0 15px 0;">Add Episode</h4>
             
-            <!-- STABLE GRID LAYOUT -->
             <div class="add-ep-grid">
                 <select id="s-season" onchange="fetchTMDbEpisodes()" style="flex:1"></select>
                 <select id="s-ep" style="flex:2"><option>Ep...</option></select>
             </div>
             
-            <!-- SMART SERIES SOURCE SELECTOR -->
-            <div class="add-ep-actions" style="flex-wrap:wrap; margin-bottom:10px;">
-                <button class="btn-main" style="background:#222; font-size:12px; padding:10px; flex:1; min-width:120px;" onclick="toggleSourceList('series-source-list')">🔍 Find Stream</button>
+            <div style="text-align:center; margin-bottom:10px;">
+                <button class="btn-main" style="background:#222; font-size:12px; padding:10px; width:100%;" onclick="toggleSourceList('series-source-list')">🔍 Find Stream</button>
             </div>
             <div id="series-source-list" class="source-grid" style="display:none; margin-bottom:15px;">
-                <div class="source-btn" onclick="searchSeriesSources('yt')"><i class="fab fa-youtube"></i> YT</div>
-                <div class="source-btn" onclick="searchSeriesSources('google')"><i class="fab fa-google"></i> Web</div>
-                <div class="source-btn" onclick="searchSeriesSources('archive')"><i class="fas fa-landmark"></i> Arch</div>
-                <div class="source-btn" onclick="searchSeriesSources('dailymotion')"><i class="fas fa-video"></i> Daily</div>
+                <div class="source-btn" onclick="searchSeriesSources('yt')"><i class="fab fa-youtube"></i> YouTube</div>
+                <div class="source-btn" onclick="searchSeriesSources('google')"><i class="fab fa-google"></i> Google</div>
+                <div class="source-btn" onclick="searchSeriesSources('archive')"><i class="fas fa-landmark"></i> Archive</div>
+                <div class="source-btn" onclick="searchSeriesSources('bing')"><i class="fas fa-search"></i> Bing</div>
             </div>
 
             <div class="add-ep-actions">
@@ -281,7 +280,6 @@
     </div>
 </div>
 
-<!-- PLAYER -->
 <div id="player">
     <div id="player-close" onclick="closePlayer()"><i class="fas fa-arrow-left"></i></div>
     <div id="vid-con"></div>
@@ -514,14 +512,18 @@
     window.searchSeriesSources = (platform) => {
         const season = document.getElementById("s-season").value;
         const episode = document.getElementById("s-ep").options[document.getElementById("s-ep").selectedIndex].text;
-        if(!activeSeriesTitle) return;
+        
+        if (!activeSeriesTitle) return alert("Series Title Missing");
         
         const query = `${activeSeriesTitle} Season ${season} ${episode}`;
+        let url = "";
         
-        if (platform === 'yt') window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, '_blank');
-        else if (platform === 'google') window.open(`https://www.google.com/search?q=${encodeURIComponent(query + " watch online free")}`, '_blank');
-        else if (platform === 'archive') window.open(`https://archive.org/search.php?query=${encodeURIComponent(query)}`, '_blank');
-        else if (platform === 'dailymotion') window.open(`https://www.dailymotion.com/search/${encodeURIComponent(query)}`, '_blank');
+        if (platform === 'yt') url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query + " scene")}`;
+        else if (platform === 'google') url = `https://www.google.com/search?q=${encodeURIComponent(query + " watch online free")}`;
+        else if (platform === 'archive') url = `https://archive.org/search.php?query=${encodeURIComponent(query)}`;
+        else if (platform === 'bing') url = `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
+        
+        if(url) window.open(url, '_blank');
     }
 
     window.resetAddModal = () => { document.getElementById("step-2").style.display="none"; document.getElementById("add-search-ui").style.display="flex"; document.getElementById("vid-link").value = ""; }
@@ -537,14 +539,11 @@
         document.getElementById("s-backdrop").style.backgroundImage = `url('${d.backdrop}')`; document.getElementById("s-title").innerText = d.title; document.getElementById("s-desc").innerText = d.overview;
         const sel=document.getElementById("s-season"); sel.innerHTML="<option>Season...</option>"; for(let i=1; i<=d.totalSeasons; i++) sel.innerHTML+=`<option value="${i}">Season ${i}</option>`;
         loadDbEps(); document.getElementById("series-view").classList.add("active");
-        
-        // Reset
-        document.getElementById("ep-tools").style.display="none";
     }
     window.closeSeriesView=()=>{ document.getElementById("series-view").classList.remove("active"); }
     window.fetchTMDbEpisodes=async()=>{ const s=document.getElementById("s-season").value; const epSel=document.getElementById("s-ep"); try { const proxy=`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://api.themoviedb.org/3/tv/${activeTmdbID}/season/${s}?api_key=${TMDB_KEY}`)}`; const r=await fetch(proxy); const d=await r.json(); epSel.innerHTML="<option>Ep...</option>"; d.episodes.forEach(e=>epSel.innerHTML+=`<option value="${e.episode_number}|${e.name}">Ep ${e.episode_number}</option>`); } catch(e){} }
     window.saveEp = async () => { const s=document.getElementById("s-season").value; const val=document.getElementById("s-ep").value; const link=document.getElementById("s-link").value; if(!link||val.includes("Ep...")) return; const [num,title]=val.split("|"); const epCol = collection(db, "movies", activeSeriesID, "episodes"); await addDoc(epCol, { season:parseInt(s), episode:parseInt(num), title:title, link:link }); document.getElementById("s-link").value=""; loadDbEps(); }
-    async function loadDbEps() { const div=document.getElementById("ep-list"); div.innerHTML="Loading..."; const epCol = collection(db, "movies", activeSeriesID, "episodes"); const snap = await getDocs(epCol); div.innerHTML=""; let eps=[]; snap.forEach(d=>eps.push({id:d.id,...d.data()})); eps.sort((a,b)=>(a.season-b.season)||(a.episode-b.episode)); eps.forEach(e=>{ div.innerHTML+=`<div class="ep-card" onclick="play('${e.link}', null, '${activeSeriesID}_${e.id}', '${activeSeriesPoster}')"><div style="flex:1;"><div style="font-size:15px; font-weight:600;">${e.episode}. ${e.title}</div><div style="font-size:12px;color:#888;">Season ${e.season}</div></div><i class="fas fa-trash admin-only ep-delete" onclick="delEp('${e.id}', event)"></i></div>`; }); 
+    async function loadDbEps() { const div=document.getElementById("ep-list"); div.innerHTML="Loading..."; const epCol = collection(db, "movies", activeSeriesID, "episodes"); const snap = await getDocs(epCol); div.innerHTML=""; let eps=[]; snap.forEach(d=>eps.push({id:d.id,...d.data()})); eps.sort((a,b)=>(a.season-b.season)||(a.episode-b.episode)); eps.forEach(e=>{ div.innerHTML+=`<div class="ep-card" onclick="play('${e.link}', null, '${activeSeriesID}_${e.id}', '${activeSeriesPoster}')"><div style="flex:1;" class="ep-info"><div style="font-size:15px; font-weight:600;">${e.episode}. ${e.title}</div><div style="font-size:12px;color:#888;">Season ${e.season}</div></div><div class="ep-delete admin-only" onclick="delEp('${e.id}', event)"><i class="fas fa-trash"></i></div></div>`; }); 
     // Re-apply admin visibility
     if(document.body.classList.contains('is-admin')) document.querySelectorAll('.admin-only').forEach(el=>el.style.display='block');
     }
@@ -628,3 +627,4 @@
 </script>
 </body>
 </html>
+```eof
