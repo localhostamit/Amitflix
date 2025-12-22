@@ -22,7 +22,7 @@
 
     <style>
         :root { 
-            --primary: #FF0055; 
+            --primary: #E50914; 
             --bg: #050505; 
             --surface: #141414;
             --glass: rgba(20, 20, 20, 0.95);
@@ -39,9 +39,28 @@
         @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .poster-container { animation: fadeSlideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }
 
-        /* --- LOADER --- */
-        #app-loader { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg); z-index: 9999; display:flex; align-items:center; justify-content:center; flex-direction: column; transition: opacity 0.5s; }
-        .spinner { width: 50px; height: 50px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite;}
+        /* --- COOL LOADER --- */
+        #app-loader { 
+            position: fixed; top:0; left:0; width:100%; height:100%; 
+            background: #000; z-index: 9999; 
+            display:flex; align-items:center; justify-content:center; flex-direction: column; 
+            transition: opacity 0.5s; 
+        }
+        .logo-loader {
+            font-family: 'Bebas Neue', sans-serif; font-size: 80px; 
+            color: var(--primary); letter-spacing: 2px;
+            animation: pulseGlow 1.5s infinite alternate;
+        }
+        .spinner { 
+            width: 30px; height: 30px; margin-top: 20px;
+            border: 3px solid rgba(255,255,255,0.1); 
+            border-top: 3px solid var(--primary); 
+            border-radius: 50%; animation: spin 0.8s linear infinite;
+        }
+        @keyframes pulseGlow {
+            from { text-shadow: 0 0 10px rgba(229, 9, 20, 0.2); transform: scale(1); }
+            to { text-shadow: 0 0 30px rgba(229, 9, 20, 0.8); transform: scale(1.1); }
+        }
         @keyframes spin { to { transform: rotate(360deg); } }
 
         /* --- INTRO --- */
@@ -62,8 +81,7 @@
         header.scrolled { background: rgba(5, 5, 5, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
         .logo { color: var(--primary); font-family: 'Bebas Neue', sans-serif; font-size: 34px; letter-spacing: 1px; cursor:pointer; background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px rgba(255, 0, 85, 0.4)); }
         .nav-actions { display: flex; align-items: center; gap: 15px; }
-        .nav-btn { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; backdrop-filter: blur(5px); }
-        .nav-btn:active { transform: scale(0.95); background: var(--primary); }
+        .nav-btn { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; backdrop-filter: blur(5px); }
         .nav-btn i { color: white; font-size: 18px; }
 
         /* --- HERO --- */
@@ -87,32 +105,32 @@
         .h-list { display: flex; gap: 18px; overflow-x: auto; padding-bottom: 20px; min-height: 180px; align-items: flex-start; scroll-behavior: smooth; }
         .v-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 18px; row-gap: 30px; padding-bottom: 40px; }
         
-        /* CARD STYLES */
-        .poster-card { position: relative; flex-shrink: 0; transition: 0.3s; cursor: pointer; width: 120px; }
-        .v-grid .poster-card { width: 100%; }
-        .h-list .poster-card { width: 130px; }
+        .poster-container { position: relative; flex-shrink: 0; transition: 0.3s; cursor: pointer; width: 130px; }
+        .v-grid .poster-container { width: 100%; }
         
         .poster { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 12px; background: var(--surface); box-shadow: 0 10px 20px rgba(0,0,0,0.3); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); border: 1px solid rgba(255,255,255,0.1); overflow: hidden; }
-        .poster-card:hover .poster { transform: scale(1.05); border-color: var(--primary); }
+        .poster-container:hover .poster { transform: scale(1.05); border-color: var(--primary); }
         
         .poster-badge { position: absolute; top: 8px; left: 8px; background: var(--glass); backdrop-filter: blur(5px); color: var(--primary); font-size: 9px; padding: 4px 8px; border-radius: 6px; font-weight: 800; border: 1px solid rgba(255,255,255,0.1); }
         
-        /* PROGRESS BAR */
         .poster-progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,0.3); border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; overflow: hidden; }
         .poster-progress-bar { height: 100%; background: var(--primary); width: 0%; }
         
-        /* FIXED DELETE BUTTON (Main Library) */
+        /* CLASSIC RED DELETE BUTTON (FIXED) */
         .delete-btn { 
-            position: absolute; top: 5px; right: 5px; 
-            width: 26px; height: 26px; 
-            background: rgba(229, 9, 20, 0.9); border: 1px solid rgba(255,255,255,0.4); 
+            position: absolute; top: -10px; right: -10px; 
+            width: 30px; height: 30px; 
+            background: #E50914; border: 2px solid #fff; 
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: 12px; z-index: 100; cursor: pointer; 
-            backdrop-filter: blur(4px); box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+            color: #fff; font-size: 14px; z-index: 100; cursor: pointer; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.6);
             transition: transform 0.2s;
         }
         .delete-btn:hover { transform: scale(1.15); background: #ff0000; }
+        .delete-btn:active { transform: scale(0.9); }
 
+        #empty-state { display: none; text-align: center; padding: 50px 20px; color: #666; }
+        
         /* --- MODALS --- */
         .modal { display: none; position: fixed; inset: 0; z-index: 5000; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; backdrop-filter: blur(15px); }
         .modal-box { background: #141414; width: 100%; max-width: 500px; padding: 30px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
@@ -175,7 +193,10 @@
 <body>
 
 <div id="intro-overlay"><div class="intro-letter">A</div></div>
-<div id="app-loader"><div class="spinner"></div></div>
+<div id="app-loader">
+    <div class="logo-loader">A</div>
+    <div class="spinner"></div>
+</div>
 
 <header id="navbar">
     <div class="logo" onclick="window.scrollTo(0,0)">AMITFLIX</div>
