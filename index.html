@@ -6,11 +6,11 @@
     <title>Amitflix</title>
     
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#050505">
+    <meta name="theme-color" content="#000000">
     
     <!-- FONTS & ICONS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
@@ -22,12 +22,14 @@
 
     <style>
         :root { 
-            --primary: #E50914; 
-            --bg: #050505; 
-            --surface: #141414;
-            --glass: rgba(20, 20, 20, 0.95);
-            --text: #ffffff;
-            --gradient-main: linear-gradient(135deg, #FF0055, #7928CA);
+            /* BATMAN THEME VARIABLES */
+            --primary: #FFD700; /* Gotham Gold */
+            --bg: #050505;      /* Deep Black */
+            --surface: #121212; /* Charcoal */
+            --glass: rgba(10, 10, 10, 0.95);
+            --text: #e0e0e0;
+            --accent-glow: 0 0 15px rgba(255, 215, 0, 0.2);
+            --gradient-main: linear-gradient(135deg, #FFD700, #B8860B);
         }
         
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -39,33 +41,29 @@
         @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .poster-container { animation: fadeSlideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }
 
-        /* --- COOL LOADER --- */
+        /* --- TURTLE LOADER --- */
         #app-loader { 
             position: fixed; top:0; left:0; width:100%; height:100%; 
             background: #000; z-index: 9999; 
             display:flex; align-items:center; justify-content:center; flex-direction: column; 
             transition: opacity 0.5s; 
         }
-        .logo-loader {
-            font-family: 'Bebas Neue', sans-serif; font-size: 80px; 
-            color: var(--primary); letter-spacing: 2px;
-            animation: pulseGlow 1.5s infinite alternate;
+        .turtle-container {
+            font-size: 60px; color: var(--primary);
+            animation: turtleMove 3s infinite ease-in-out;
+            margin-bottom: 20px; filter: drop-shadow(0 0 10px var(--primary));
         }
-        .spinner { 
-            width: 30px; height: 30px; margin-top: 20px;
-            border: 3px solid rgba(255,255,255,0.1); 
-            border-top: 3px solid var(--primary); 
-            border-radius: 50%; animation: spin 0.8s linear infinite;
+        @keyframes turtleMove {
+            0% { transform: translateX(-30px) rotate(0deg); }
+            25% { transform: translateX(0px) rotate(5deg); }
+            50% { transform: translateX(30px) rotate(0deg); }
+            75% { transform: translateX(0px) rotate(-5deg); }
+            100% { transform: translateX(-30px) rotate(0deg); }
         }
-        @keyframes pulseGlow {
-            from { text-shadow: 0 0 10px rgba(229, 9, 20, 0.2); transform: scale(1); }
-            to { text-shadow: 0 0 30px rgba(229, 9, 20, 0.8); transform: scale(1.1); }
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* --- INTRO --- */
         #intro-overlay { position: fixed; inset: 0; background: #000; z-index: 9998; display: flex; align-items: center; justify-content: center; animation: fadeOutIntro 0.5s ease 2.5s forwards; pointer-events: none; }
-        .intro-letter { font-family: 'Bebas Neue', sans-serif; font-size: 15rem; color: var(--primary); transform: scale(1); animation: netflixZoom 2.5s cubic-bezier(0.645, 0.045, 0.355, 1) forwards; text-shadow: 0 0 20px rgba(229, 9, 20, 0.5); }
+        .intro-letter { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 15rem; color: var(--primary); transform: scale(1); animation: netflixZoom 2.5s cubic-bezier(0.645, 0.045, 0.355, 1) forwards; text-shadow: 0 0 30px var(--primary); }
         @keyframes netflixZoom { 0% { transform: scale(1); opacity: 0; } 20% { opacity: 1; transform: scale(1); } 80% { opacity: 1; transform: scale(1.5); } 100% { transform: scale(30); opacity: 0; } }
         @keyframes fadeOutIntro { to { opacity: 0; } }
 
@@ -78,96 +76,99 @@
 
         /* --- NAVBAR --- */
         header { position: fixed; top: 0; width: 100%; height: 75px; z-index: 2000; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; transition: 0.3s ease; background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, transparent 100%); }
-        header.scrolled { background: rgba(5, 5, 5, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .logo { color: var(--primary); font-family: 'Bebas Neue', sans-serif; font-size: 34px; letter-spacing: 1px; cursor:pointer; background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px rgba(255, 0, 85, 0.4)); }
+        header.scrolled { background: rgba(5, 5, 5, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,215,0,0.1); }
+        .logo { color: var(--primary); font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 32px; letter-spacing: 2px; cursor:pointer; text-shadow: var(--accent-glow); }
         .nav-actions { display: flex; align-items: center; gap: 15px; }
-        .nav-btn { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; backdrop-filter: blur(5px); }
-        .nav-btn:active { transform: scale(0.95); background: var(--primary); }
-        .nav-btn i { color: white; font-size: 18px; line-height: 1; }
+        .nav-btn { width: 44px; height: 44px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; backdrop-filter: blur(5px); }
+        .nav-btn:active { transform: scale(0.95); background: var(--primary); border-color: var(--primary); }
+        .nav-btn:active i { color: black; }
+        .nav-btn i { color: #ccc; font-size: 18px; line-height: 1; }
 
         /* --- HERO --- */
         .hero { height: 75vh; width: 100%; position: relative; overflow: hidden; display: flex; align-items: flex-end; }
-        .hero-bg { position: absolute; inset: 0; background-size: cover; background-position: center; transition: opacity 1s ease; z-index: 1; }
+        .hero-bg { position: absolute; inset: 0; background-size: cover; background-position: center; transition: opacity 1s ease; z-index: 1; filter: brightness(0.8) contrast(1.1); }
         .hero-video-wrapper { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 0; pointer-events: none; }
-        .hero-video { width: 100vw; height: 56.25vw; min-height: 100vh; min-width: 177.77vh; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0; transition: opacity 1.5s ease; }
-        .hero::after { content:''; position: absolute; inset:0; z-index: 2; background: linear-gradient(to top, var(--bg) 5%, transparent 60%), linear-gradient(to right, rgba(0,0,0,0.8) 0%, transparent 50%); }
+        .hero-video { width: 100vw; height: 56.25vw; min-height: 100vh; min-width: 177.77vh; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0; transition: opacity 1.5s ease; filter: brightness(0.7); }
+        .hero::after { content:''; position: absolute; inset:0; z-index: 2; background: linear-gradient(to top, var(--bg) 10%, transparent 60%), linear-gradient(to right, rgba(0,0,0,0.9) 0%, transparent 50%); }
         .hero-content { position: relative; z-index: 10; padding: 0 5% 60px 5%; width: 100%; max-width: 900px; }
-        .hero-tag { font-size: 11px; font-weight: 800; letter-spacing: 2px; color: #fff; margin-bottom: 15px; display: inline-block; background: var(--gradient-main); padding: 6px 12px; border-radius: 20px; box-shadow: 0 5px 15px rgba(255,0,85,0.3); }
-        .hero-title { font-size: clamp(32px, 8vw, 70px); font-weight: 900; margin: 0 0 15px 0; line-height: 1.1; text-shadow: 0 5px 20px rgba(0,0,0,0.8); }
-        .hero-desc { font-size: 15px; color: #ccc; max-width: 600px; line-height: 1.6; margin-bottom: 25px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
-        .btn-play { padding: 14px 35px; background: white; color: black; border: none; font-weight: 800; border-radius: 30px; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; font-size: 16px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 0 30px rgba(255,255,255,0.15); }
+        .hero-tag { font-family: 'Rajdhani', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 2px; color: #000; margin-bottom: 15px; display: inline-block; background: var(--primary); padding: 4px 10px; border-radius: 2px; box-shadow: var(--accent-glow); }
+        .hero-title { font-family: 'Rajdhani', sans-serif; font-size: clamp(35px, 8vw, 70px); font-weight: 700; margin: 0 0 15px 0; line-height: 1; text-shadow: 0 5px 20px black; text-transform: uppercase; letter-spacing: 1px; }
+        .hero-desc { font-size: 15px; color: #bbb; max-width: 600px; line-height: 1.6; margin-bottom: 25px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 0 2px 4px black; }
+        .btn-play { padding: 12px 35px; background: var(--primary); color: black; border: none; font-weight: 700; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; font-size: 16px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: var(--accent-glow); font-family: 'Rajdhani', sans-serif; text-transform: uppercase; letter-spacing: 1px; }
         .btn-play:hover { transform: scale(1.05); }
 
         /* --- SECTIONS --- */
         .section { padding: 0 5%; margin-bottom: 50px; position: relative; z-index: 20; }
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .section-title { font-size: 20px; font-weight: 700; color: white; display: flex; align-items: center; gap: 10px; }
-        .section-title::before { content:''; width: 4px; height: 24px; background: var(--primary); border-radius: 2px; box-shadow: 0 0 10px var(--primary); }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
+        .section-title { font-family: 'Rajdhani', sans-serif; font-size: 20px; font-weight: 700; color: white; display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .section-title::before { content:''; width: 3px; height: 18px; background: var(--primary); box-shadow: var(--accent-glow); }
         .h-list { display: flex; gap: 18px; overflow-x: auto; padding-bottom: 20px; min-height: 180px; align-items: flex-start; scroll-behavior: smooth; }
         .v-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 18px; row-gap: 30px; padding-bottom: 40px; }
         .poster-container { position: relative; flex-shrink: 0; transition: 0.3s; cursor: pointer; width: 130px; }
         .v-grid .poster-container { width: 100%; }
-        .poster { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 12px; background: var(--surface); box-shadow: 0 10px 20px rgba(0,0,0,0.3); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); border: 1px solid rgba(255,255,255,0.1); overflow: hidden; }
+        .poster { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 6px; background: var(--surface); box-shadow: 0 10px 20px rgba(0,0,0,0.5); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); border: 1px solid rgba(255,255,255,0.1); overflow: hidden; }
         .poster-container:hover .poster { transform: scale(1.05); border-color: var(--primary); }
-        .poster-badge { position: absolute; top: 8px; left: 8px; background: var(--glass); backdrop-filter: blur(5px); color: var(--primary); font-size: 9px; padding: 4px 8px; border-radius: 6px; font-weight: 800; border: 1px solid rgba(255,255,255,0.1); }
-        .poster-progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,0.3); border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; overflow: hidden; }
-        .poster-progress-bar { height: 100%; background: var(--primary); width: 0%; }
+        .poster-badge { position: absolute; top: 6px; left: 6px; background: rgba(0,0,0,0.85); color: var(--primary); font-size: 9px; padding: 3px 6px; border-radius: 2px; font-weight: 700; border: 1px solid rgba(255,215,0,0.2); text-transform: uppercase; letter-spacing: 1px; }
+        .poster-progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: rgba(255,255,255,0.2); overflow: hidden; }
+        .poster-progress-bar { height: 100%; background: var(--primary); width: 0%; box-shadow: 0 0 5px var(--primary); }
         
-        /* FIXED DELETE BUTTON */
+        /* FIXED DELETE BUTTON (Aligned Top Right Inside Poster) */
         .delete-btn { 
             position: absolute; top: 5px; right: 5px; 
-            width: 28px; height: 28px; 
-            background: #E50914; border: 2px solid #fff; 
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: 12px; z-index: 100; cursor: pointer; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.6);
-            transition: transform 0.2s;
+            width: 26px; height: 26px; 
+            background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.3); 
+            border-radius: 4px; display: flex; align-items: center; justify-content: center;
+            color: #ccc; font-size: 12px; z-index: 100; cursor: pointer; 
+            backdrop-filter: blur(4px); transition: 0.2s;
         }
-        .delete-btn:hover { transform: scale(1.15); background: #ff0000; }
-        .delete-btn:active { transform: scale(0.9); }
+        .delete-btn:hover { background: #b00; color: white; border-color: #f00; }
 
-        #empty-state { display: none; text-align: center; padding: 50px 20px; color: #666; }
+        #empty-state { display: none; text-align: center; padding: 50px 20px; color: #444; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; letter-spacing: 2px; }
         
         /* --- MODALS --- */
-        .modal { display: none; position: fixed; inset: 0; z-index: 5000; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; backdrop-filter: blur(15px); }
-        .modal-box { background: #141414; width: 100%; max-width: 500px; padding: 30px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .modal { display: none; position: fixed; inset: 0; z-index: 5000; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+        .modal-box { background: #111; width: 100%; max-width: 500px; padding: 30px; border-radius: 12px; border: 1px solid #333; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.8); animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes slideUp { from { opacity:0; transform:translateY(50px); } to { opacity:1; transform:translateY(0); } }
-        input, select { width: 100%; padding: 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 12px; font-size: 16px; margin-bottom: 15px; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--primary); background: rgba(255,255,255,0.1); }
-        .btn-main { width: 100%; padding: 16px; background: var(--gradient-main); color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer; box-shadow: 0 10px 20px rgba(255, 0, 85, 0.3); transition: 0.3s; }
+        input, select { width: 100%; padding: 14px; background: #080808; border: 1px solid #333; color: white; border-radius: 4px; font-size: 15px; margin-bottom: 15px; outline: none; transition: 0.3s; font-family: 'Outfit', sans-serif; }
+        input:focus { border-color: var(--primary); }
+        .btn-main { width: 100%; padding: 14px; background: var(--primary); color: black; border: none; border-radius: 4px; font-weight: 700; font-size: 15px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-family: 'Rajdhani', sans-serif; }
         
         /* STREAM SOURCES GRID */
         .source-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
-        .source-btn { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); color: #ccc; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 600; text-align: center; }
-        .source-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--primary); color: white; }
+        .source-btn { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); color: #ccc; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 600; text-align: center; transition: 0.2s; }
+        .source-btn:hover { background: rgba(255,215,0,0.1); border-color: var(--primary); color: var(--primary); }
 
         /* --- SERIES VIEW --- */
         .series-view { position: fixed; inset: 0; background: var(--bg); z-index: 6000; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); overflow-y: auto; }
         .series-view.active { transform: translateY(0); }
-        .series-backdrop { height: 45vh; width: 100%; background-size: cover; background-position: center; position: relative; flex-shrink: 0; mask-image: linear-gradient(to bottom, var(--bg) 60%, transparent 100%); }
-        .close-series { position: absolute; top: 20px; right: 20px; width: 44px; height: 44px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; cursor: pointer; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .series-backdrop { height: 45vh; width: 100%; background-size: cover; background-position: center; position: relative; flex-shrink: 0; mask-image: linear-gradient(to bottom, var(--bg) 60%, transparent 100%); filter: brightness(0.6); }
+        .close-series { position: absolute; top: 20px; right: 20px; width: 44px; height: 44px; background: rgba(0,0,0,0.5); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; cursor: pointer; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
         .series-content { padding: 0 25px 50px 25px; margin-top: -80px; position: relative; z-index: 2; }
         
-        /* EPISODE CARD (Flex Alignment Fix) */
         .ep-card { 
             display: flex; align-items: center; justify-content: space-between;
             padding: 15px; background: rgba(255,255,255,0.03); 
-            border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); 
-            margin-bottom: 10px; position: relative; transition: 0.2s;
+            border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); 
+            margin-bottom: 8px; position: relative; transition: 0.2s;
         }
-        .ep-card:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.1); }
+        .ep-card:hover { background: rgba(255,255,255,0.08); border-color: var(--primary); }
         .ep-info { flex: 1; padding-right: 15px; } 
         
-        /* Episode Delete Button (Aligned Properly) */
+        /* Series Delete Button (Aligned Properly) */
         .ep-delete { 
             width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
-            color: #888; font-size: 14px; cursor: pointer; border-radius: 50%;
+            color: #666; font-size: 14px; cursor: pointer; border-radius: 4px;
             transition: 0.2s; background: rgba(255,255,255,0.05);
         }
-        .ep-delete:hover { color: #fff; background: var(--primary); }
-
-        /* SERIES UI FIX - NO GLITCH */
-        .admin-panel { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin: 25px 0; border: 1px solid rgba(255,255,255,0.1); }
+        .ep-delete:hover { color: #fff; background: #b00; }
+        .ep-edit { 
+            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+            color: #666; font-size: 14px; cursor: pointer; border-radius: 4px;
+            transition: 0.2s; background: rgba(255,255,255,0.05); margin-right: 5px;
+        }
+        .ep-edit:hover { color: #fff; background: green; }
+        
+        .admin-panel { background: rgba(255,255,255,0.03); padding: 20px; border-radius: 8px; margin: 25px 0; border: 1px solid rgba(255,255,255,0.1); }
         .add-ep-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; margin-bottom: 10px; }
         .add-ep-actions { display: flex; gap: 10px; }
         
@@ -191,17 +192,14 @@
 
 <div id="intro-overlay"><div class="intro-letter">A</div></div>
 <div id="app-loader">
-    <div class="logo-loader">A</div>
-    <div class="spinner"></div>
+    <div class="turtle-container"><i class="fas fa-turtle"></i></div>
+    <div style="color:#666; font-size:12px; text-transform:uppercase; font-family:'Rajdhani'; letter-spacing:2px;">Loading System</div>
 </div>
 
 <header id="navbar">
     <div class="logo" onclick="window.scrollTo(0,0)">AMITFLIX</div>
     <div class="nav-actions">
-        <!-- ADMIN TOOLS -->
         <div class="nav-btn admin-only" onclick="openModal('add-modal')" title="Add Movie"><i class="fas fa-plus"></i></div>
-        
-        <!-- LOGIN / LOGOUT -->
         <div class="nav-btn" id="login-btn" onclick="openLoginModal()" title="Login"><i class="fas fa-user-lock"></i></div>
         <div class="nav-btn" id="logout-btn" onclick="firebaseLogout()" title="Logout"><i class="fas fa-sign-out-alt" style="color:var(--primary);"></i></div>
     </div>
@@ -210,7 +208,6 @@
 <div class="hero" id="hero">
     <div class="hero-bg" id="hero-bg"></div>
     <div class="hero-video-wrapper" id="hero-video-wrapper"></div>
-    
     <div class="hero-content">
         <span class="hero-tag" id="hero-tag">FEATURED</span>
         <h1 class="hero-title" id="hero-title">Welcome</h1>
@@ -219,39 +216,35 @@
     </div>
 </div>
 
-<!-- CONTINUE WATCHING -->
 <div class="section" id="continue-section" style="margin-top: -40px; display:none;">
-    <div class="section-header">
-        <span class="section-title">📺 Continue Watching</span>
-    </div>
+    <div class="section-header"><span class="section-title">Continue Watching</span></div>
     <div class="h-list" id="continue-list"></div>
 </div>
 
-<!-- COLLECTION -->
 <div class="section" id="main-collection">
     <div class="section-header">
-        <span class="section-title">📂 My Collection</span>
-        <i class="fas fa-sync-alt" onclick="loadLib()" style="color:#aaa; cursor:pointer;"></i>
+        <span class="section-title">My Collection</span>
+        <i class="fas fa-sync-alt" onclick="loadLib()" style="color:#444; cursor:pointer;"></i>
     </div>
     <div class="v-grid" id="grid-list"></div>
-    <div id="empty-state" style="text-align:center; padding: 40px; color:#666; display:none;">No content added.</div>
+    <div id="empty-state">No content added.</div>
 </div>
 
 <!-- LOGIN MODAL -->
 <div id="login-modal" class="modal">
     <div class="modal-box" style="text-align:center; max-width:350px;">
-        <h2 style="margin-top:0; background:var(--gradient-main); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Admin Access</h2>
+        <h2 style="margin-top:0; font-family:'Rajdhani'; color:var(--primary);">ADMIN ACCESS</h2>
         <input type="email" id="email-input" placeholder="Email">
         <input type="password" id="password-input" placeholder="Password">
         <button class="btn-main" onclick="firebaseLogin()">Sign In</button>
-        <div style="margin-top:15px; font-size:13px; color:#aaa; cursor:pointer;" onclick="closeModal('login-modal')">Cancel</div>
+        <div style="margin-top:15px; font-size:13px; color:#444; cursor:pointer;" onclick="closeModal('login-modal')">Cancel</div>
     </div>
 </div>
 
 <!-- ADD MODAL -->
 <div id="add-modal" class="modal">
     <div class="modal-box">
-        <h2 style="margin-top:0;">Add Content</h2>
+        <h2 style="margin-top:0; font-family:'Rajdhani';">Add Content</h2>
         <div style="display:flex; gap:10px;">
             <select id="add-type"><option value="movie">Movie</option><option value="series">TV Series</option></select>
         </div>
@@ -286,13 +279,13 @@
 
 <!-- SERIES VIEW -->
 <div id="series-view" class="series-view">
-    <div class="series-backdrop" id="s-backdrop"><div class="close-series" onclick="closeSeriesView()"><i class="fas fa-chevron-down"></i></div></div>
+    <div class="series-backdrop" id="s-backdrop"><div class="close-series" onclick="closeSeriesView()"><i class="fas fa-arrow-left"></i></div></div>
     <div class="series-content">
         <h1 class="series-title" id="s-title">Title</h1>
-        <p id="s-desc" style="color:#aaa; line-height:1.5; font-size:14px;">...</p>
+        <p id="s-desc" style="color:#888; line-height:1.5; font-size:14px;">...</p>
         
         <div class="admin-only admin-panel">
-            <h4 style="margin:0 0 15px 0;">Add Episode</h4>
+            <h4 style="margin:0 0 15px 0; font-family:'Rajdhani'; color:var(--primary);">ADD EPISODE</h4>
             
             <!-- STABLE GRID LAYOUT -->
             <div class="add-ep-grid">
@@ -317,7 +310,7 @@
             </div>
         </div>
         
-        <h3 style="margin-bottom:15px;">Episodes</h3>
+        <h3 style="margin-bottom:15px; font-family:'Rajdhani'; letter-spacing:1px;">EPISODES</h3>
         <div id="ep-list" style="display:flex; flex-direction:column; gap:10px; padding-bottom:50px;"></div>
     </div>
 </div>
@@ -337,7 +330,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, query, orderBy, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
     const OMDB_KEY = "496d1395"; 
@@ -585,9 +578,31 @@
     window.closeSeriesView=()=>{ document.getElementById("series-view").classList.remove("active"); }
     window.fetchTMDbEpisodes=async()=>{ const s=document.getElementById("s-season").value; const epSel=document.getElementById("s-ep"); try { const proxy=`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://api.themoviedb.org/3/tv/${activeTmdbID}/season/${s}?api_key=${TMDB_KEY}`)}`; const r=await fetch(proxy); const d=await r.json(); epSel.innerHTML="<option>Ep...</option>"; d.episodes.forEach(e=>epSel.innerHTML+=`<option value="${e.episode_number}|${e.name}">Ep ${e.episode_number}</option>`); } catch(e){} }
     window.saveEp = async () => { const s=document.getElementById("s-season").value; const val=document.getElementById("s-ep").value; const link=document.getElementById("s-link").value; if(!link||val.includes("Ep...")) return; const [num,title]=val.split("|"); const epCol = collection(db, "movies", activeSeriesID, "episodes"); await addDoc(epCol, { season:parseInt(s), episode:parseInt(num), title:title, link:link }); document.getElementById("s-link").value=""; loadDbEps(); }
-    async function loadDbEps() { const div=document.getElementById("ep-list"); div.innerHTML="Loading..."; const epCol = collection(db, "movies", activeSeriesID, "episodes"); const snap = await getDocs(epCol); div.innerHTML=""; let eps=[]; snap.forEach(d=>eps.push({id:d.id,...d.data()})); eps.sort((a,b)=>(a.season-b.season)||(a.episode-b.episode)); eps.forEach(e=>{ div.innerHTML+=`<div class="ep-card" onclick="play('${e.link}', null, '${activeSeriesID}_${e.id}', '${activeSeriesPoster}')"><div style="flex:1;"><div style="font-size:15px; font-weight:600;">${e.episode}. ${e.title}</div><div style="font-size:12px;color:#888;">Season ${e.season}</div></div><div class="ep-delete admin-only" onclick="delEp('${e.id}', event)"><i class="fas fa-trash"></i></div></div>`; }); 
+    async function loadDbEps() { const div=document.getElementById("ep-list"); div.innerHTML="Loading..."; const epCol = collection(db, "movies", activeSeriesID, "episodes"); const snap = await getDocs(epCol); div.innerHTML=""; let eps=[]; snap.forEach(d=>eps.push({id:d.id,...d.data()})); eps.sort((a,b)=>(a.season-b.season)||(a.episode-b.episode)); eps.forEach(e=>{ 
+        div.innerHTML+=`
+        <div class="ep-card" onclick="play('${e.link}', null, '${activeSeriesID}_${e.id}', '${activeSeriesPoster}')">
+            <div style="flex:1;">
+                <div style="font-size:15px; font-weight:600;">${e.episode}. ${e.title}</div>
+                <div style="font-size:12px;color:#888;">Season ${e.season}</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <i class="fas fa-pen ep-edit admin-only" onclick="editEpisodeLink('${e.id}', '${e.link}', event)"></i>
+                <i class="fas fa-trash ep-delete admin-only" onclick="delEp('${e.id}', event)"></i>
+            </div>
+        </div>`; 
+    }); 
     // Re-apply admin visibility
-    if(document.body.classList.contains('is-admin')) document.querySelectorAll('.admin-only').forEach(el=>el.style.display='block');
+    if(document.body.classList.contains('is-admin')) document.querySelectorAll('.admin-only').forEach(el=>el.style.display='flex');
+    }
+
+    // --- EDIT LINK ---
+    window.editEpisodeLink = async (epId, currentLink, e) => {
+        if(e) e.stopPropagation();
+        const newLink = prompt("Update Episode Link:", currentLink);
+        if(newLink && newLink !== currentLink) {
+            await updateDoc(doc(db, "movies", activeSeriesID, "episodes", epId), { link: newLink });
+            loadDbEps();
+        }
     }
 
     // --- PLAYER ---
