@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     
     <!-- SCRIPTS -->
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.0"></script> <!-- Updated HLS Version -->
     <script src="https://www.youtube.com/iframe_api"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -22,14 +22,11 @@
 
     <style>
         :root { 
-            /* BATMAN THEME VARIABLES */
             --primary: #FFD700; /* Gotham Gold */
-            --bg: #050505;      /* Deep Black */
-            --surface: #121212; /* Charcoal */
+            --bg: #050505; 
+            --surface: #121212;
             --glass: rgba(10, 10, 10, 0.95);
             --text: #e0e0e0;
-            --accent-glow: 0 0 15px rgba(255, 215, 0, 0.2);
-            --gradient-main: linear-gradient(135deg, #FFD700, #B8860B);
         }
         
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -41,7 +38,7 @@
         @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .poster-container { animation: fadeSlideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }
 
-        /* --- TURTLE LOADER --- */
+        /* --- LOADER --- */
         #app-loader { 
             position: fixed; top:0; left:0; width:100%; height:100%; 
             background: #000; z-index: 9999; 
@@ -77,12 +74,11 @@
         /* --- NAVBAR --- */
         header { position: fixed; top: 0; width: 100%; height: 75px; z-index: 2000; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; transition: 0.3s ease; background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, transparent 100%); }
         header.scrolled { background: rgba(5, 5, 5, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,215,0,0.1); }
-        .logo { color: var(--primary); font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 32px; letter-spacing: 2px; cursor:pointer; text-shadow: var(--accent-glow); }
+        .logo { color: var(--primary); font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 32px; letter-spacing: 2px; cursor:pointer; text-shadow: 0 0 10px rgba(255,215,0,0.3); }
         .nav-actions { display: flex; align-items: center; gap: 15px; }
         .nav-btn { width: 44px; height: 44px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; backdrop-filter: blur(5px); }
-        .nav-btn:active { transform: scale(0.95); background: var(--primary); border-color: var(--primary); }
-        .nav-btn:active i { color: black; }
-        .nav-btn i { color: #ccc; font-size: 18px; line-height: 1; }
+        .nav-btn:active { transform: scale(0.95); background: var(--primary); }
+        .nav-btn i { color: #ccc; font-size: 18px; }
 
         /* --- HERO --- */
         .hero { height: 75vh; width: 100%; position: relative; overflow: hidden; display: flex; align-items: flex-end; }
@@ -91,17 +87,17 @@
         .hero-video { width: 100vw; height: 56.25vw; min-height: 100vh; min-width: 177.77vh; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0; transition: opacity 1.5s ease; filter: brightness(0.7); }
         .hero::after { content:''; position: absolute; inset:0; z-index: 2; background: linear-gradient(to top, var(--bg) 10%, transparent 60%), linear-gradient(to right, rgba(0,0,0,0.9) 0%, transparent 50%); }
         .hero-content { position: relative; z-index: 10; padding: 0 5% 60px 5%; width: 100%; max-width: 900px; }
-        .hero-tag { font-family: 'Rajdhani', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 2px; color: #000; margin-bottom: 15px; display: inline-block; background: var(--primary); padding: 4px 10px; border-radius: 2px; box-shadow: var(--accent-glow); }
+        .hero-tag { font-family: 'Rajdhani', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 2px; color: #000; margin-bottom: 15px; display: inline-block; background: var(--primary); padding: 4px 10px; border-radius: 2px; box-shadow: 0 0 10px rgba(255,215,0,0.3); }
         .hero-title { font-family: 'Rajdhani', sans-serif; font-size: clamp(35px, 8vw, 70px); font-weight: 700; margin: 0 0 15px 0; line-height: 1; text-shadow: 0 5px 20px black; text-transform: uppercase; letter-spacing: 1px; }
         .hero-desc { font-size: 15px; color: #bbb; max-width: 600px; line-height: 1.6; margin-bottom: 25px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 0 2px 4px black; }
-        .btn-play { padding: 12px 35px; background: var(--primary); color: black; border: none; font-weight: 700; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; font-size: 16px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: var(--accent-glow); font-family: 'Rajdhani', sans-serif; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-play { padding: 12px 35px; background: var(--primary); color: black; border: none; font-weight: 700; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; font-size: 16px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 0 15px rgba(255,215,0,0.2); font-family: 'Rajdhani', sans-serif; text-transform: uppercase; letter-spacing: 1px; }
         .btn-play:hover { transform: scale(1.05); }
 
         /* --- SECTIONS --- */
         .section { padding: 0 5%; margin-bottom: 50px; position: relative; z-index: 20; }
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
         .section-title { font-family: 'Rajdhani', sans-serif; font-size: 20px; font-weight: 700; color: white; display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 1px; }
-        .section-title::before { content:''; width: 3px; height: 18px; background: var(--primary); box-shadow: var(--accent-glow); }
+        .section-title::before { content:''; width: 3px; height: 18px; background: var(--primary); }
         .h-list { display: flex; gap: 18px; overflow-x: auto; padding-bottom: 20px; min-height: 180px; align-items: flex-start; scroll-behavior: smooth; }
         .v-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 18px; row-gap: 30px; padding-bottom: 40px; }
         .poster-container { position: relative; flex-shrink: 0; transition: 0.3s; cursor: pointer; width: 130px; }
@@ -112,28 +108,22 @@
         .poster-progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: rgba(255,255,255,0.2); overflow: hidden; }
         .poster-progress-bar { height: 100%; background: var(--primary); width: 0%; box-shadow: 0 0 5px var(--primary); }
         
-        /* FIXED DELETE BUTTON (Aligned Top Right Inside Poster) */
-        .delete-btn { 
-            position: absolute; top: 5px; right: 5px; 
-            width: 26px; height: 26px; 
-            background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.3); 
-            border-radius: 4px; display: flex; align-items: center; justify-content: center;
-            color: #ccc; font-size: 12px; z-index: 100; cursor: pointer; 
-            backdrop-filter: blur(4px); transition: 0.2s;
-        }
-        .delete-btn:hover { background: #b00; color: white; border-color: #f00; }
+        /* DELETE & EDIT */
+        .card-action-btn { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 11px; z-index: 50; cursor: pointer; backdrop-filter: blur(4px); margin-bottom: 4px; }
+        .card-action-btn.delete:hover { background: #b00; color: #fff; border-color: #f00; }
+        .card-action-btn.edit { top: 35px; } /* Stacks below delete */
+        .card-action-btn.edit:hover { background: #4CAF50; color: #fff; border-color: #4CAF50; }
 
         #empty-state { display: none; text-align: center; padding: 50px 20px; color: #444; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; letter-spacing: 2px; }
         
         /* --- MODALS --- */
-        .modal { display: none; position: fixed; inset: 0; z-index: 5000; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+        .modal { display: none; position: fixed; inset: 0; z-index: 5000; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; backdrop-filter: blur(15px); }
         .modal-box { background: #111; width: 100%; max-width: 500px; padding: 30px; border-radius: 12px; border: 1px solid #333; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.8); animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes slideUp { from { opacity:0; transform:translateY(50px); } to { opacity:1; transform:translateY(0); } }
         input, select { width: 100%; padding: 14px; background: #080808; border: 1px solid #333; color: white; border-radius: 4px; font-size: 15px; margin-bottom: 15px; outline: none; transition: 0.3s; font-family: 'Outfit', sans-serif; }
         input:focus { border-color: var(--primary); }
         .btn-main { width: 100%; padding: 14px; background: var(--primary); color: black; border: none; border-radius: 4px; font-weight: 700; font-size: 15px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-family: 'Rajdhani', sans-serif; }
         
-        /* STREAM SOURCES GRID */
         .source-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
         .source-btn { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); color: #ccc; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 600; text-align: center; transition: 0.2s; }
         .source-btn:hover { background: rgba(255,215,0,0.1); border-color: var(--primary); color: var(--primary); }
@@ -145,37 +135,19 @@
         .close-series { position: absolute; top: 20px; right: 20px; width: 44px; height: 44px; background: rgba(0,0,0,0.5); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; cursor: pointer; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
         .series-content { padding: 0 25px 50px 25px; margin-top: -80px; position: relative; z-index: 2; }
         
-        .ep-card { 
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 15px; background: rgba(255,255,255,0.03); 
-            border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); 
-            margin-bottom: 8px; position: relative; transition: 0.2s;
-        }
+        .ep-card { display: flex; align-items: center; justify-content: space-between; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 10px; position: relative; transition: 0.2s; }
         .ep-card:hover { background: rgba(255,255,255,0.08); border-color: var(--primary); }
         .ep-info { flex: 1; padding-right: 15px; } 
         
-        /* Series Delete Button (Aligned Properly) */
-        .ep-delete { 
-            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
-            color: #666; font-size: 14px; cursor: pointer; border-radius: 4px;
-            transition: 0.2s; background: rgba(255,255,255,0.05);
-        }
-        .ep-delete:hover { color: #fff; background: #b00; }
-        .ep-edit { 
-            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
-            color: #666; font-size: 14px; cursor: pointer; border-radius: 4px;
-            transition: 0.2s; background: rgba(255,255,255,0.05); margin-right: 5px;
-        }
-        .ep-edit:hover { color: #fff; background: green; }
-        
+        .ep-actions { display: flex; gap: 8px; }
+        .ep-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: #888; font-size: 13px; cursor: pointer; border-radius: 4px; transition: 0.2s; background: rgba(255,255,255,0.05); }
+        .ep-btn.edit:hover { color: #fff; background: #4CAF50; }
+        .ep-btn.delete:hover { color: #fff; background: #b00; }
+
         .admin-panel { background: rgba(255,255,255,0.03); padding: 20px; border-radius: 8px; margin: 25px 0; border: 1px solid rgba(255,255,255,0.1); }
         .add-ep-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; margin-bottom: 10px; }
         .add-ep-actions { display: flex; gap: 10px; }
-        
-        @media (max-width: 600px) {
-            .add-ep-grid { grid-template-columns: 1fr; }
-            .add-ep-actions { flex-direction: column; }
-        }
+        @media (max-width: 600px) { .add-ep-grid { grid-template-columns: 1fr; } .add-ep-actions { flex-direction: column; } }
 
         /* --- PLAYER --- */
         #player { background: black; z-index: 9999; display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; }
@@ -185,7 +157,7 @@
         #player-close { position: absolute; top: 25px; left: 25px; width: 45px; height: 45px; background: rgba(20,20,20,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); }
         .tb-slider { width: 80px; -webkit-appearance: none; height: 4px; background: #666; border-radius: 2px; }
         .tb-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: white; border-radius: 50%; cursor: pointer; }
-        #yt-fallback { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: #E50914; color: white; padding: 12px 25px; border-radius: 30px; font-weight: bold; cursor: pointer; display: none; box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 10005; border: 1px solid rgba(255,255,255,0.2); }
+        #yt-fallback { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: var(--primary); color: black; padding: 12px 25px; border-radius: 4px; font-weight: 700; cursor: pointer; display: none; z-index: 10005; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -199,7 +171,7 @@
 <header id="navbar">
     <div class="logo" onclick="window.scrollTo(0,0)">AMITFLIX</div>
     <div class="nav-actions">
-        <div class="nav-btn admin-only" onclick="openModal('add-modal')" title="Add Movie"><i class="fas fa-plus"></i></div>
+        <div class="nav-btn admin-only" onclick="openModal('add-modal')" title="Add"><i class="fas fa-plus"></i></div>
         <div class="nav-btn" id="login-btn" onclick="openLoginModal()" title="Login"><i class="fas fa-user-lock"></i></div>
         <div class="nav-btn" id="logout-btn" onclick="firebaseLogout()" title="Logout"><i class="fas fa-sign-out-alt" style="color:var(--primary);"></i></div>
     </div>
@@ -224,7 +196,7 @@
 <div class="section" id="main-collection">
     <div class="section-header">
         <span class="section-title">My Collection</span>
-        <i class="fas fa-sync-alt" onclick="loadLib()" style="color:#444; cursor:pointer;"></i>
+        <i class="fas fa-sync-alt" onclick="loadLib()" style="color:#444; cursor:pointer;" title="Refresh"></i>
     </div>
     <div class="v-grid" id="grid-list"></div>
     <div id="empty-state">No content added.</div>
@@ -237,7 +209,7 @@
         <input type="email" id="email-input" placeholder="Email">
         <input type="password" id="password-input" placeholder="Password">
         <button class="btn-main" onclick="firebaseLogin()">Sign In</button>
-        <div style="margin-top:15px; font-size:13px; color:#444; cursor:pointer;" onclick="closeModal('login-modal')">Cancel</div>
+        <div style="margin-top:15px; font-size:12px; color:#444; cursor:pointer;" onclick="closeModal('login-modal')">Cancel</div>
     </div>
 </div>
 
@@ -269,10 +241,9 @@
                     <div class="source-btn" onclick="openSourceSearch('bing')"><i class="fas fa-search" style="color:skyblue;"></i> Bing</div>
                 </div>
             </div>
-            <div id="series-msg" style="display:none; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; font-size:13px; color:#ccc;">Creates a Series Folder.</div>
-            
-            <button class="btn-main" onclick="saveToDB()">Save to Library</button>
-            <div style="text-align:center; margin-top:10px; font-size:12px; color:#666; cursor:pointer;" onclick="resetAddModal()">Cancel / Back</div>
+            <div id="series-msg" style="display:none; background:rgba(255,255,255,0.05); padding:10px; border-radius:4px; font-size:13px; color:#aaa;">Creates a Series Folder.</div>
+            <button class="btn-main" onclick="saveToDB()">Save</button>
+            <div style="text-align:center; margin-top:10px; font-size:12px; color:#444; cursor:pointer;" onclick="resetAddModal()">Back</div>
         </div>
     </div>
 </div>
@@ -287,13 +258,11 @@
         <div class="admin-only admin-panel">
             <h4 style="margin:0 0 15px 0; font-family:'Rajdhani'; color:var(--primary);">ADD EPISODE</h4>
             
-            <!-- STABLE GRID LAYOUT -->
             <div class="add-ep-grid">
                 <select id="s-season" onchange="fetchTMDbEpisodes()" style="flex:1"></select>
                 <select id="s-ep" style="flex:2"><option>Ep...</option></select>
             </div>
             
-            <!-- SMART SERIES SOURCE SELECTOR -->
             <div style="text-align:center; margin-bottom:10px;">
                 <button class="btn-main" style="background:#222; font-size:12px; padding:10px; width:100%;" onclick="toggleSourceList('series-source-list')">🔍 Find Stream</button>
             </div>
@@ -311,7 +280,7 @@
         </div>
         
         <h3 style="margin-bottom:15px; font-family:'Rajdhani'; letter-spacing:1px;">EPISODES</h3>
-        <div id="ep-list" style="display:flex; flex-direction:column; gap:10px; padding-bottom:50px;"></div>
+        <div id="ep-list" style="display:flex; flex-direction:column; gap:8px; padding-bottom:50px;"></div>
     </div>
 </div>
 
@@ -376,12 +345,28 @@
     }
     window.firebaseLogout = async () => { await signOut(auth); alert("Logged Out."); }
 
+    // --- EDIT LINK ---
+    window.editLink = async (id, currentLink, e) => {
+        if(e) e.stopPropagation();
+        const newLink = prompt("Update Link:", currentLink);
+        if(newLink && newLink !== currentLink) {
+            await updateDoc(doc(db, "movies", id), { link: newLink });
+            loadLib();
+        }
+    }
+    window.editEpisodeLink = async (epId, currentLink) => {
+        const newLink = prompt("Update Episode Link:", currentLink);
+        if(newLink && newLink !== currentLink) {
+            await updateDoc(doc(db, "movies", activeSeriesID, "episodes", epId), { link: newLink });
+            loadDbEps();
+        }
+    }
+
     // --- CONTINUE WATCHING ---
     function updateContinueWatching() {
         const list = document.getElementById("continue-list");
         const sec = document.getElementById("continue-section");
         const main = document.getElementById("main-collection");
-        
         let watching = [];
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
@@ -390,27 +375,12 @@
                 if(data.pct > 5 && data.pct < 95) watching.push(data);
             }
         }
-
-        if(watching.length === 0) { 
-            sec.style.display='none'; 
-            main.style.marginTop = '-40px'; 
-            return; 
-        }
-        
-        sec.style.display='block';
-        main.style.marginTop = '0px';
-        list.innerHTML = "";
-        
+        if(watching.length === 0) { sec.style.display='none'; main.style.marginTop = '-40px'; return; }
+        sec.style.display='block'; main.style.marginTop = '0px'; list.innerHTML = "";
         watching.forEach(item => {
-            const d = document.createElement("div"); d.className = "poster-container";
-            d.style.width="130px";
-            // Ensure poster URL is valid
+            const d = document.createElement("div"); d.className = "poster-container"; d.style.width="130px";
             const posterSrc = item.poster || 'https://via.placeholder.com/150';
-            
-            d.innerHTML = `
-                <img src="${posterSrc}" class="poster" onclick="play('${item.link}', null, '${item.id}')">
-                <div class="poster-progress"><div class="poster-progress-bar" style="width:${item.pct}%"></div></div>
-            `;
+            d.innerHTML = `<img src="${posterSrc}" class="poster" onclick="play('${item.link}', null, '${item.id}')"><div class="poster-progress"><div class="poster-progress-bar" style="width:${item.pct}%"></div></div>`;
             list.appendChild(d);
         });
     }
@@ -420,7 +390,6 @@
         if(allMovies.length > 0) {
             const r = allMovies[Math.floor(Math.random() * allMovies.length)];
             const bg = r.backdrop || r.poster;
-            
             document.getElementById("hero-bg").style.backgroundImage = `url('${bg}')`;
             document.getElementById("hero-title").innerText = r.title;
             document.getElementById("hero-desc").innerText = r.overview;
@@ -477,8 +446,9 @@
             d.innerHTML = `
                 <div class="poster-badge">${badge}</div>
                 <img src="${m.poster}" class="poster" onclick="${action}">
-                <div class="delete-btn admin-only" onclick="deleteContent('${m.id}', event)">
-                    <i class="fas fa-trash"></i>
+                <div class="admin-only" style="position:absolute; top:5px; right:5px; z-index:100; display:flex; flex-direction:column; gap:5px;">
+                     <div class="card-action-btn delete" onclick="deleteContent('${m.id}', event)"><i class="fas fa-trash"></i></div>
+                     <div class="card-action-btn edit" onclick="editLink('${m.id}', '${m.link}', event)"><i class="fas fa-pen"></i></div>
                 </div>
             `;
             grid.appendChild(d);
@@ -578,31 +548,19 @@
     window.closeSeriesView=()=>{ document.getElementById("series-view").classList.remove("active"); }
     window.fetchTMDbEpisodes=async()=>{ const s=document.getElementById("s-season").value; const epSel=document.getElementById("s-ep"); try { const proxy=`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://api.themoviedb.org/3/tv/${activeTmdbID}/season/${s}?api_key=${TMDB_KEY}`)}`; const r=await fetch(proxy); const d=await r.json(); epSel.innerHTML="<option>Ep...</option>"; d.episodes.forEach(e=>epSel.innerHTML+=`<option value="${e.episode_number}|${e.name}">Ep ${e.episode_number}</option>`); } catch(e){} }
     window.saveEp = async () => { const s=document.getElementById("s-season").value; const val=document.getElementById("s-ep").value; const link=document.getElementById("s-link").value; if(!link||val.includes("Ep...")) return; const [num,title]=val.split("|"); const epCol = collection(db, "movies", activeSeriesID, "episodes"); await addDoc(epCol, { season:parseInt(s), episode:parseInt(num), title:title, link:link }); document.getElementById("s-link").value=""; loadDbEps(); }
-    async function loadDbEps() { const div=document.getElementById("ep-list"); div.innerHTML="Loading..."; const epCol = collection(db, "movies", activeSeriesID, "episodes"); const snap = await getDocs(epCol); div.innerHTML=""; let eps=[]; snap.forEach(d=>eps.push({id:d.id,...d.data()})); eps.sort((a,b)=>(a.season-b.season)||(a.episode-b.episode)); eps.forEach(e=>{ 
-        div.innerHTML+=`
+    async function loadDbEps() { const div=document.getElementById("ep-list"); div.innerHTML="Loading..."; const epCol = collection(db, "movies", activeSeriesID, "episodes"); const snap = await getDocs(epCol); div.innerHTML=""; let eps=[]; snap.forEach(d=>eps.push({id:d.id,...d.data()})); eps.sort((a,b)=>(a.season-b.season)||(a.episode-b.episode)); eps.forEach(e=>{ div.innerHTML+=`
         <div class="ep-card" onclick="play('${e.link}', null, '${activeSeriesID}_${e.id}', '${activeSeriesPoster}')">
-            <div style="flex:1;">
+            <div style="flex:1;" class="ep-info">
                 <div style="font-size:15px; font-weight:600;">${e.episode}. ${e.title}</div>
                 <div style="font-size:12px;color:#888;">Season ${e.season}</div>
             </div>
-            <div style="display:flex; align-items:center; gap:10px;">
-                <i class="fas fa-pen ep-edit admin-only" onclick="editEpisodeLink('${e.id}', '${e.link}', event)"></i>
-                <i class="fas fa-trash ep-delete admin-only" onclick="delEp('${e.id}', event)"></i>
+            <div class="ep-actions admin-only" onclick="event.stopPropagation()">
+                <div class="ep-btn edit" onclick="editEpisodeLink('${e.id}', '${e.link}')"><i class="fas fa-pen"></i></div>
+                <div class="ep-btn delete" onclick="delEp('${e.id}')"><i class="fas fa-trash"></i></div>
             </div>
         </div>`; 
     }); 
-    // Re-apply admin visibility
-    if(document.body.classList.contains('is-admin')) document.querySelectorAll('.admin-only').forEach(el=>el.style.display='flex');
-    }
-
-    // --- EDIT LINK ---
-    window.editEpisodeLink = async (epId, currentLink, e) => {
-        if(e) e.stopPropagation();
-        const newLink = prompt("Update Episode Link:", currentLink);
-        if(newLink && newLink !== currentLink) {
-            await updateDoc(doc(db, "movies", activeSeriesID, "episodes", epId), { link: newLink });
-            loadDbEps();
-        }
+    if(document.body.classList.contains('is-admin')) document.querySelectorAll('.admin-only').forEach(el=>el.style.setProperty('display', 'flex', 'important'));
     }
 
     // --- PLAYER ---
@@ -614,19 +572,14 @@
         const fb = document.getElementById("yt-fallback");
         p.style.display = "block"; con.innerHTML = ""; fb.style.display = "none";
         
-        // Ensure poster is not null if saving progress
-        const savePoster = poster || 'https://via.placeholder.com/150';
-
         let startTime = 0;
         if(id) { const saved = localStorage.getItem('watch_progress_' + id); if(saved) startTime = JSON.parse(saved).time; }
 
-        // CHECK FOR ARCHIVE.ORG
         if(url.includes("archive.org")) {
              let src = url.includes("/details/") ? url.replace("/details/", "/embed/") : url;
              con.innerHTML = `<iframe src="${src}?autoplay=1" allowfullscreen style="width:100%; height:100%" frameborder="0"></iframe>`;
              document.getElementById("player-toolbar").style.display = 'none';
         }
-        // CHECK FOR YOUTUBE
         else if(url.match(/(?:youtube\.com|youtu\.be)/)) {
             const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
             if(ytMatch) {
@@ -653,12 +606,17 @@
         else {
             document.getElementById("player-toolbar").style.display = 'flex';
             const v = document.createElement("video"); v.autoplay = true; v.controls = true; v.style.width="100%"; v.style.height="100%";
-            if(url.includes(".m3u8") && Hls.isSupported()) { const h = new Hls(); h.loadSource(url); h.attachMedia(v); } else { v.src = url; }
+            // High Performance Buffering
+            if(url.includes(".m3u8") && Hls.isSupported()) { 
+                const h = new Hls({maxBufferLength: 30, maxMaxBufferLength: 600}); 
+                h.loadSource(url); h.attachMedia(v); 
+            } else { v.src = url; }
+            
             v.currentTime = startTime;
             v.addEventListener('timeupdate', () => {
                 if(id && v.duration > 0) {
                     const pct = (v.currentTime / v.duration) * 100;
-                    localStorage.setItem('watch_progress_' + id, JSON.stringify({ time: v.currentTime, pct: pct, id: id, link: url, poster: savePoster }));
+                    localStorage.setItem('watch_progress_' + id, JSON.stringify({ time: v.currentTime, pct: pct, id: id, link: url, poster: poster }));
                 }
             });
             con.appendChild(v);
