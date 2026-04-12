@@ -86,7 +86,7 @@ You can deploy on Vercel / Netlify / Render / GitHub Pages (depending on your se
 4. Push and open a PR
 
 ## License
-Add a license if you plan to open-source (MIT is common).
+ MIT
 
 ## Author
 **Amit**  
